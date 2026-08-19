@@ -64,6 +64,76 @@ nginx. No build step or server runtime is required.
 
 ---
 
+## Quote form → GoHighLevel
+
+The quote form posts six fields, named to map straight onto the CRM contact
+fields:
+
+| Form field | `name` | CRM field |
+|---|---|---|
+| Name | `full_name` | `{{contact.full_name}}` |
+| Email | `email` | `{{contact.email}}` |
+| Phone | `phone` | `{{contact.phone}}` |
+| Property address | `property_address` | `{{contact.property_address}}` |
+| Services needed | `service_needed` | `{{contact.service_needed}}` |
+| Job notes | `job_notes` | `{{contact.job_notes}}` |
+
+`property_address`, `service_needed` and `job_notes` are custom fields — create
+them in **Settings → Custom Fields** in GHL before the first submission, or
+those three values will be dropped while name, email and phone still land.
+
+The GHL tracking script is in the `<head>` of every page. In GHL, enable
+**Form Analytics** and **Form Submissions** in Settings or nothing is recorded.
+
+The build satisfies all five of GHL's capture requirements, and there is an
+automated check for them (see *Verifying* below):
+
+1. Form Analytics and Form Submissions enabled — **your side, in GHL settings**
+2. Real `<form>` in the page DOM, no iframe ✓
+3. Every field has a `name`, nothing is `disabled`, plus
+   `<input type="email" name="email">` and `<input type="tel" name="phone">` ✓
+4. Submits through the native submit event via `<button type="submit">` ✓
+5. No JS blocks that event ✓
+
+**This last one is a live constraint, not a one-off.** `assets/js/site.js`
+deliberately has no submit handler on the form. Adding one that calls
+`preventDefault()` on a valid submit will silently stop every lead reaching the
+CRM — the form will still look like it works.
+
+### Where submissions go
+
+`FORM_ACTION` in `tools/build.py` defaults to a `GET` to `/thank-you/`. That
+works on any static host with no backend, and GHL still captures the submission
+from the submit event.
+
+The tradeoff: a GET puts the lead's name, email, phone and address in the query
+string, so they land in the host's access logs. The thank-you page strips them
+from the address bar 1.5s after load so they do not sit in browser history or
+leak through the referrer, but the logs still see them.
+
+**Before launch, point the form at a real endpoint** so leads also arrive by
+email and are not carried in a URL. Both settings are at the top of
+`tools/build.py`:
+
+```python
+FORM_ACTION = "https://formspree.io/f/XXXXXXXX"
+FORM_METHOD = "post"
+FORM_REDIRECT_FIELD = "_next"        # Formspree redirect field
+```
+
+Rebuild and the hidden redirect field is written in automatically, pointing at
+`/thank-you/`. Web3Forms works the same way with `redirect` plus an
+`access_key` in `FORM_HIDDEN`.
+
+Relying on the tracking script alone means a lead is lost if the script fails
+to load — a real endpoint gives you a second copy.
+
+## Thank-you page
+
+`/thank-you/` is `noindex, follow` and kept out of `sitemap.xml`. It confirms
+the request, sets the callback expectation, and cross-sells three services.
+It is a clean conversion trigger for a GHL workflow or a GA4 goal.
+
 ## Images — one action needed before launch
 
 The 12 photographs were generated with Recraft V4.1 and currently load from the
@@ -128,13 +198,29 @@ for a person, with the keyword carried naturally.
 - [ ] Register `greenlineservices.com.au` and enable HTTPS
 - [ ] Confirm `SITE` in `tools/build.py` matches the live domain, then rebuild
 - [ ] Run `tools/localise-images.sh` so no images load from an external CDN
-- [ ] Replace the quote form's `mailto:` fallback with a real endpoint
-      (Formspree, Netlify Forms, Web3Forms) — see `assets/js/site.js`
+- [ ] Enable Form Analytics and Form Submissions in GHL settings
+- [ ] Create the `property_address`, `service_needed` and `job_notes` custom
+      fields in GHL
+- [ ] Point `FORM_ACTION` at a real form endpoint so leads also arrive by email
+      and are not carried in a query string
+- [ ] Submit a live test and confirm the contact appears in GHL with all six
+      fields populated
 - [ ] Verify the property in Google Search Console, submit `sitemap.xml`
 - [ ] Request indexing on the homepage and all six service pages
 - [ ] Connect GA4; set quote-form submits and `tel:` taps as conversion events
 - [ ] Add the website URL to the Google Business Profile
 - [ ] Test the rendered schema in Google's Rich Results Test
+
+## Verifying
+
+`tools/check.py` runs the whole suite — HTML nesting, JSON-LD parsing, one h1
+per page, title and description lengths, canonicals, single robots tag, image
+alt text, duplicate ids, broken internal links, the GHL field mapping and the
+five capture requirements, and keyword density against each page's target.
+
+```bash
+python3 tools/build.py && python3 tools/check.py
+```
 
 ## Not built (phase two)
 

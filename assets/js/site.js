@@ -96,23 +96,24 @@
     });
   });
 
-  /* Quote form -> pre-filled email.
-     Swap this for a real form endpoint (Formspree, Netlify Forms, etc.)
-     once the domain and hosting are live. */
-  document.querySelectorAll('form.quote-form').forEach(function (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var data = new FormData(form);
-      var get = function (k) { return (data.get(k) || '').toString().trim(); };
-      var body = 'Name: ' + get('name')
-        + '\nPhone: ' + get('phone')
-        + '\nEmail: ' + get('email')
-        + '\nSuburb: ' + get('suburb')
-        + '\nService: ' + get('service')
-        + '\n\nDetails:\n' + get('message');
-      window.location.href = 'mailto:davidcoelho92@hotmail.com'
-        + '?subject=' + encodeURIComponent('Quote request - ' + get('service') + ' - ' + get('suburb'))
-        + '&body=' + encodeURIComponent(body);
+  /* Thank-you page: the default form action is a GET, so the visitor's details
+     arrive in the query string. Clear them from the address bar once the page
+     has settled, so lead data does not sit in browser history or leak through
+     the referrer. The delay leaves analytics and tracking scripts time to read
+     the URL first. Switching FORM_ACTION to a POST endpoint makes this moot. */
+  if (window.location.pathname.indexOf('/thank-you') === 0 && window.location.search) {
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        if (window.history.replaceState) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }, 1500);
     });
-  });
+  }
+
+  /* The quote form is deliberately left alone.
+     GoHighLevel's external tracking script captures the native submit event,
+     so nothing here may call preventDefault() or otherwise block submission.
+     Validation is handled by the browser via the `required` attributes, and
+     the form's own action carries the visitor to /thank-you/. */
 })();

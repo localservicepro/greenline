@@ -29,6 +29,11 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/css/site.css">
+
+<script 
+  src="https://link.msgsndr.com/js/external-tracking.js"
+  data-tracking-id="tk_9f5144f196b340e59b8396dd9921dc07">
+</script>
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -153,33 +158,37 @@
 
       </div>
       <div class="quote-col"><div id="quote"><div class="contact-card">
-  <h3 style="margin-bottom:18px">Get a free quote</h3><form class="quote-form" novalidate>
-    <div class="field">
-      <label for="qf-name">Your name</label>
-      <input type="text" id="qf-name" name="name" required autocomplete="name">
+  <h3 style="margin-bottom:18px">Get a free quote</h3><form class="quote-form" action="/thank-you/" method="get">
+    <div class="form-grid">
+      <div class="field">
+        <label for="qf-full_name">Name</label>
+        <input type="text" id="qf-full_name" name="full_name" required autocomplete="name" placeholder="Your name">
+      </div>
+      <div class="field">
+        <label for="qf-email">Email</label>
+        <input type="email" id="qf-email" name="email" required autocomplete="email" placeholder="Enter your email">
+      </div>
+      <div class="field">
+        <label for="qf-phone">Phone</label>
+        <input type="tel" id="qf-phone" name="phone" required autocomplete="tel" placeholder="Enter your phone">
+      </div>
+      <div class="field">
+        <label for="qf-service_needed">Service needed</label>
+        <select id="qf-service_needed" name="service_needed"><option>Lawn mowing</option><option>Gutter cleaning</option><option>Garden maintenance</option><option>Hedge trimming &amp; edging</option><option selected>Green waste &amp; rubbish removal</option><option>End-of-lease or pre-sale clean-up</option><option>Commercial property maintenance</option><option>Something else</option></select>
+      </div>
+      <div class="field full">
+        <label for="qf-property_address">Property address</label>
+        <input type="text" id="qf-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
+      </div>
+      <div class="field full">
+        <label for="qf-job_notes">Job notes</label>
+        <textarea id="qf-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
+      </div>
+      <div class="field full" style="margin-bottom:0">
+        <button type="submit" class="btn-submit">Send my quote request</button>
+        <p class="form-note">Or call <a href="tel:+61494154184">0494 154 184</a> for a same-day answer.</p>
+      </div>
     </div>
-    <div class="field">
-      <label for="qf-phone">Phone</label>
-      <input type="tel" id="qf-phone" name="phone" required autocomplete="tel">
-    </div>
-    <div class="field">
-      <label for="qf-email">Email</label>
-      <input type="email" id="qf-email" name="email" autocomplete="email">
-    </div>
-    <div class="field">
-      <label for="qf-suburb">Suburb</label>
-      <input type="text" id="qf-suburb" name="suburb" required autocomplete="address-level2" placeholder="Frankston, Mount Eliza, Seaford&hellip;">
-    </div>
-    <div class="field">
-      <label for="qf-service">What do you need?</label>
-      <select id="qf-service" name="service"><option>Lawn mowing</option><option>Gutter cleaning</option><option>Garden maintenance</option><option>Hedge trimming &amp; edging</option><option selected>Green waste &amp; rubbish removal</option><option>End-of-lease or pre-sale clean-up</option><option>Commercial property maintenance</option><option>Something else</option></select>
-    </div>
-    <div class="field">
-      <label for="qf-msg">Details</label>
-      <textarea id="qf-msg" name="message" placeholder="Rough size of the yard, how long since it was last done, any access notes"></textarea>
-    </div>
-    <button type="submit" class="btn-submit">Send my quote request</button>
-    <p class="form-note">Or call <a href="tel:+61494154184">0494 154 184</a> for a same-day answer.</p>
   </form>
 </div></div></div>
     </div>

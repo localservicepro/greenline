@@ -48,6 +48,38 @@ GMB_EMBED = (
     "%3A0xae0f0cd5a3ad64b2!2sGreenline%20services!5e0!3m2!1sen!2sph!4v1787142280589!5m2!1sen!2sph"
 )
 
+# ------------------------------------------------------------ GoHighLevel CRM
+# Loaded on every page. GHL's external tracking script reads the native form
+# submit event and syncs the submission to a contact, so the form must render
+# in the page DOM, every field needs a name attribute, and nothing may call
+# preventDefault() on a valid submit. See README.
+GHL_TRACKING = (
+    '<script \n'
+    '  src="https://link.msgsndr.com/js/external-tracking.js"\n'
+    '  data-tracking-id="tk_9f5144f196b340e59b8396dd9921dc07">\n'
+    '</script>\n'
+)
+
+# The quote form submits natively so GHL can capture it, then lands the visitor
+# on the thank-you page.
+#
+# Default: a GET straight to /thank-you/. Works on any static host with no
+# backend, and GHL still captures the submission.
+#
+# To also deliver the lead by email, point FORM_ACTION at a form endpoint and
+# let it redirect to /thank-you/ — the hidden field below carries the redirect:
+#   Formspree:   FORM_ACTION = "https://formspree.io/f/XXXXXXXX"
+#                FORM_METHOD = "post"
+#                FORM_REDIRECT_FIELD = "_next"
+#   Web3Forms:   FORM_ACTION = "https://api.web3forms.com/submit"
+#                FORM_METHOD = "post"
+#                FORM_REDIRECT_FIELD = "redirect"
+#                (plus a hidden access_key input)
+FORM_ACTION = "/thank-you/"
+FORM_METHOD = "get"
+FORM_REDIRECT_FIELD = None      # hidden redirect field name, if the endpoint needs one
+FORM_HIDDEN = {}                # any extra hidden inputs the endpoint needs
+
 # ---------------------------------------------------------------------- images
 # Generated with Recraft V4.1 for this build. Run tools/localise-images.sh from a
 # machine with open internet access to pull them into assets/img/ and flip the
@@ -194,6 +226,7 @@ def head(page):
     og_img = img("og") if not USE_LOCAL_IMAGES else SITE + "/assets/img/og.png"
     depth_css = "/assets/css/site.css"
     extra = page.get("head_extra", "")
+    robots = page.get("robots", "index, follow, max-image-preview:large, max-snippet:-1")
     return f"""<!DOCTYPE html>
 <html lang="en-AU">
 <head>
@@ -202,7 +235,7 @@ def head(page):
 <title>{page['title']}</title>
 <meta name="description" content="{page['desc']}">
 <link rel="canonical" href="{url}">
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta name="robots" content="{robots}">
 <meta name="theme-color" content="#0E1F18">
 <meta name="geo.region" content="AU-VIC">
 <meta name="geo.placename" content="Frankston, Victoria">
@@ -225,7 +258,8 @@ def head(page):
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{depth_css}">
-{extra}</head>
+
+{GHL_TRACKING}{extra}</head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
 """
@@ -410,6 +444,19 @@ def nap_list():
 
 
 def quote_form(preselect=None, heading=None):
+    """The quote form.
+
+    Field names map 1:1 onto the GHL contact fields:
+        full_name        -> {{contact.full_name}}
+        email            -> {{contact.email}}
+        phone            -> {{contact.phone}}
+        property_address -> {{contact.property_address}}
+        service_needed   -> {{contact.service_needed}}
+        job_notes        -> {{contact.job_notes}}
+
+    Submits natively (no preventDefault anywhere) so the GHL tracking script
+    can read the submission. Do not add a JS handler that blocks submit.
+    """
     opts = []
     labels = ["Lawn mowing", "Gutter cleaning", "Garden maintenance",
               "Hedge trimming &amp; edging", "Green waste &amp; rubbish removal",
@@ -418,35 +465,47 @@ def quote_form(preselect=None, heading=None):
     for lb in labels:
         sel = " selected" if preselect and preselect.lower() in lb.lower() else ""
         opts.append("<option%s>%s</option>" % (sel, lb))
-    head_html = "<h3 style=\"margin-bottom:18px\">%s</h3>" % heading if heading else ""
+
+    hidden = ""
+    if FORM_REDIRECT_FIELD:
+        hidden += '<input type="hidden" name="%s" value="%s/thank-you/">\n    ' % (
+            FORM_REDIRECT_FIELD, SITE)
+    for k, v in FORM_HIDDEN.items():
+        hidden += '<input type="hidden" name="%s" value="%s">\n    ' % (k, v)
+
+    head_html = '<h3 style="margin-bottom:18px">%s</h3>' % heading if heading else ""
     return f"""<div class="contact-card">
-  {head_html}<form class="quote-form" novalidate>
-    <div class="field">
-      <label for="qf-name">Your name</label>
-      <input type="text" id="qf-name" name="name" required autocomplete="name">
+  {head_html}<form class="quote-form" action="{FORM_ACTION}" method="{FORM_METHOD}">
+    {hidden}<div class="form-grid">
+      <div class="field">
+        <label for="qf-full_name">Name</label>
+        <input type="text" id="qf-full_name" name="full_name" required autocomplete="name" placeholder="Your name">
+      </div>
+      <div class="field">
+        <label for="qf-email">Email</label>
+        <input type="email" id="qf-email" name="email" required autocomplete="email" placeholder="Enter your email">
+      </div>
+      <div class="field">
+        <label for="qf-phone">Phone</label>
+        <input type="tel" id="qf-phone" name="phone" required autocomplete="tel" placeholder="Enter your phone">
+      </div>
+      <div class="field">
+        <label for="qf-service_needed">Service needed</label>
+        <select id="qf-service_needed" name="service_needed">{"".join(opts)}</select>
+      </div>
+      <div class="field full">
+        <label for="qf-property_address">Property address</label>
+        <input type="text" id="qf-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
+      </div>
+      <div class="field full">
+        <label for="qf-job_notes">Job notes</label>
+        <textarea id="qf-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
+      </div>
+      <div class="field full" style="margin-bottom:0">
+        <button type="submit" class="btn-submit">Send my quote request</button>
+        <p class="form-note">Or call <a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a> for a same-day answer.</p>
+      </div>
     </div>
-    <div class="field">
-      <label for="qf-phone">Phone</label>
-      <input type="tel" id="qf-phone" name="phone" required autocomplete="tel">
-    </div>
-    <div class="field">
-      <label for="qf-email">Email</label>
-      <input type="email" id="qf-email" name="email" autocomplete="email">
-    </div>
-    <div class="field">
-      <label for="qf-suburb">Suburb</label>
-      <input type="text" id="qf-suburb" name="suburb" required autocomplete="address-level2" placeholder="Frankston, Mount Eliza, Seaford&hellip;">
-    </div>
-    <div class="field">
-      <label for="qf-service">What do you need?</label>
-      <select id="qf-service" name="service">{"".join(opts)}</select>
-    </div>
-    <div class="field">
-      <label for="qf-msg">Details</label>
-      <textarea id="qf-msg" name="message" placeholder="Rough size of the yard, how long since it was last done, any access notes"></textarea>
-    </div>
-    <button type="submit" class="btn-submit">Send my quote request</button>
-    <p class="form-note">Or call <a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a> for a same-day answer.</p>
   </form>
 </div>"""
 
@@ -1688,6 +1747,82 @@ def contact_page_schema():
 }}"""
 
 
+def page_thanks():
+    return f"""<section class="page-hero">
+  <div class="stripes" aria-hidden="true"></div>
+  <div class="hero-in">
+    <span class="eyebrow">Request received</span>
+    <h1>Thanks &mdash; we&rsquo;ve got your details</h1>
+    <p class="hero-sub">Your quote request has come through to Greenline Services. {BIZ['owner']} will get back to you with a fixed price, usually the same day and always within one business day.</p>
+    <div class="hero-cta">
+      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
+      <a href="/" class="btn-lg btn-ghost">Back to the homepage</a>
+    </div>
+  </div>
+</section>
+
+<div class="trustbar">
+  <div class="wrap">
+    <ul>
+      <li>{svg('check')}Fixed price, not an hourly rate</li>
+      <li>{svg('check')}No call-out fee</li>
+      <li>{svg('check')}No obligation to book</li>
+    </ul>
+  </div>
+</div>
+
+<main id="main">
+
+<section class="sec">
+  <div class="wrap">
+    <div class="split">
+      <div class="prose">
+        <span class="eyebrow">What happens next</span>
+        <h2>Three steps from here</h2>
+        <ol class="steps-list">
+          <li><b>We read your notes.</b> If the job is clear from what you have written, we can often price it without coming out at all.</li>
+          <li><b>We call or email you back.</b> Same day where we can, within one business day otherwise. If we need to see the property first, we will book a time that suits you.</li>
+          <li><b>You get a fixed price.</b> Free, no obligation, and it does not change once the work starts.</li>
+        </ol>
+        <div class="callout">
+          <p><strong>In a hurry?</strong> If you have an inspection date, a photography booking or a storm on the way, call {BIZ['phone_display']} rather than waiting on the email. We prioritise jobs with a hard deadline.</p>
+        </div>
+      </div>
+      <div class="split-media">{picture('work-peninsula')}</div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">While you wait</span>
+      <h2>Everything else we can do on the same visit</h2>
+      <p class="lede">If we are already coming out, adding another job to the same visit rarely costs a second trip.</p>
+    </div>
+    {service_cards(limit=3)}
+  </div>
+</section>
+
+<section class="sec">
+  <div class="wrap">
+    <div class="contact-grid">
+      <div>
+        <div class="sec-head" style="margin-bottom:26px">
+          <span class="eyebrow">Our details</span>
+          <h2>Greenline Services, Frankston</h2>
+        </div>
+        {nap_list()}
+      </div>
+      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
+    </div>
+  </div>
+</section>
+
+</main>
+"""
+
+
 BANNER = ("<!-- Generated by tools/build.py — edit the content there, not here. "
           "Greenline Services, Frankston VIC. -->\n")
 
@@ -1772,10 +1907,16 @@ def main():
     for p in pages:
         written.append(write(p["file"], render(p)))
 
+    written.append(write("thank-you/index.html", render({
+        "path": "/thank-you/", "active": "", "title": "Thank You | Greenline Services Frankston",
+        "desc": "Thanks for your quote request. Greenline Services will come back to you with a fixed price, usually the same day and always within one business day.",
+        "body": page_thanks(), "schema": [], "robots": "noindex, follow",
+    })))
+
     written.append(write("404.html", render({
         "path": "/404.html", "active": "", "title": "Page not found | Greenline Services",
         "desc": "The page you were looking for does not exist. Browse Greenline Services lawn and garden services in Frankston, or get in touch for a free quote.",
-        "body": NOT_FOUND_BODY, "schema": [], "head_extra": '<meta name="robots" content="noindex, follow">\n',
+        "body": NOT_FOUND_BODY, "schema": [], "robots": "noindex, follow",
     })))
     written.append(write("sitemap.xml", sitemap(pages)))
     written.append(write("robots.txt", ROBOTS))
