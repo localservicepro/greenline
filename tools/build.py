@@ -352,7 +352,6 @@ def crumbs(trail):
 
 def cta_band(heading, text):
     return f"""<section class="cta-band">
-  <div class="stripes" aria-hidden="true"></div>
   <div class="wrap">
     <div>
       <h2>{heading}</h2>
@@ -398,7 +397,6 @@ def site_footer(with_modal=True):
                          ["Frankston", "Frankston South", "Seaford", "Langwarrin",
                           "Carrum Downs", "Mount Eliza", "Mornington", "Mount Martha"])
     return f"""<footer>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="wrap">
     <div class="f-grid">
       <div class="f-about">
