@@ -96,6 +96,66 @@
     });
   });
 
+  /* Quote popup.
+     Triggers carry data-quote-open. On the contact page there is no modal —
+     the form lives in the hero — so the trigger falls back to scrolling there,
+     and to /contact/ if the page has no form at all. */
+  var modal = document.getElementById('quote-modal');
+  var lastFocused = null;
+
+  function focusables() {
+    return Array.prototype.filter.call(
+      modal.querySelectorAll('button, [href], input, select, textarea'),
+      function (el) { return !el.disabled && el.offsetParent !== null; });
+  }
+
+  function openModal() {
+    lastFocused = document.activeElement;
+    modal.hidden = false;
+    document.body.classList.add('modal-open');
+    var first = modal.querySelector('input, select, textarea');
+    if (first) first.focus();
+  }
+
+  function closeModal() {
+    modal.hidden = true;
+    document.body.classList.remove('modal-open');
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+
+  document.querySelectorAll('[data-quote-open]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      if (modal) {
+        e.preventDefault();
+        openModal();
+        return;
+      }
+      var inline = document.getElementById('quote');
+      if (inline) {
+        e.preventDefault();
+        inline.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var field = inline.querySelector('input, select, textarea');
+        if (field) setTimeout(function () { field.focus({ preventScroll: true }); }, 450);
+      }
+      /* no modal and no inline form: let the href carry them to /contact/ */
+    });
+  });
+
+  if (modal) {
+    modal.querySelectorAll('[data-quote-close]').forEach(function (el) {
+      el.addEventListener('click', closeModal);
+    });
+    modal.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { closeModal(); return; }
+      if (e.key !== 'Tab') return;
+      var items = focusables();
+      if (!items.length) return;
+      var first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+  }
+
   /* Thank-you page: the default form action is a GET, so the visitor's details
      arrive in the query string. Clear them from the address bar once the page
      has settled, so lead data does not sit in browser history or leak through

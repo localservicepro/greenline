@@ -72,6 +72,9 @@ class Nesting(HTMLParser):
 
 def visible_text(body):
     body = re.sub(r'<(script|style|iframe)[^>]*>.*?</\1>', ' ', body, flags=re.S | re.I)
+    # The quote popup is hidden boilerplate repeated on every page — it is not
+    # body copy, so it must not count towards or dilute keyword density.
+    body = re.sub(r'<div class="modal" id="quote-modal" hidden>.*?\n</div>', ' ', body, flags=re.S)
     return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', body)))
 
 
@@ -133,12 +136,15 @@ def check_form(f):
     s = open(f, encoding='utf-8').read()
     if 'quote-form' not in s:
         return
-    m = re.search(r'<form class="quote-form".*?</form>', s, re.S)
-    if not m:
+    forms = re.findall(r'<form class="quote-form".*?</form>', s, re.S)
+    if not forms:
         fail(f, 'quote form markup not found')
         return
-    form = m.group(0)
+    for form in forms:
+        check_one_form(f, form)
 
+
+def check_one_form(f, form):
     names = re.findall(r'name="([^"]+)"', form)
     missing = GHL_FIELDS - set(names)
     extra = set(names) - GHL_FIELDS

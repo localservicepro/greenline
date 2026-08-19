@@ -265,7 +265,12 @@ def head(page):
 """
 
 
-def site_header(active, solid=False):
+def site_header(active, solid=False, modal_cta=True):
+    # On the contact page the form is right there in the hero, so the header
+    # button scrolls to it instead of opening the popup.
+    cta_attr = ' data-quote-open' if modal_cta else ''
+    cta_href = '/contact/' if modal_cta else '#quote'
+
     dd_items = ['''<a class="dd-item" role="menuitem" href="/services/">
             <span class="dd-icon" aria-hidden="true">%s</span>
             <span class="dd-text"><strong>All Services</strong><em>Complete property upkeep</em></span>
@@ -306,7 +311,7 @@ def site_header(active, solid=False):
 
     <div class="nav-actions">
       <a href="tel:{BIZ['phone_link']}" class="nav-phone">{BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-cta">Get a Free Quote</a>
+      <a href="{cta_href}" class="btn-cta"{cta_attr}>Get a Free Quote</a>
     </div>
 
     <button class="nav-burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
@@ -327,6 +332,7 @@ def site_header(active, solid=False):
   <a href="/about/">About</a>
   <a href="/#areas">Areas</a>
   <a href="/contact/">Contact</a>
+  <a href="{cta_href}"{cta_attr} class="mobile-quote">Get a free quote</a>
   <a href="tel:{BIZ['phone_link']}">Call {BIZ['phone_display']}</a>
 </nav>
 """
@@ -354,14 +360,39 @@ def cta_band(heading, text):
     </div>
     <div class="hero-cta">
       <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Request a quote</a>
+      <button type="button" class="btn-lg btn-ghost" data-quote-open>Request a quote</button>
     </div>
   </div>
 </section>
 """
 
 
-def site_footer():
+def quote_modal():
+    """Quote popup, rendered once per page.
+
+    A real <form> in the page DOM with the same six GHL field names as the
+    inline form — hidden with CSS, never `disabled`, so GHL still captures it.
+    Ids are prefixed `qm-` so they cannot collide with an inline form.
+    """
+    return f"""<div class="modal" id="quote-modal" hidden>
+  <div class="modal-scrim" data-quote-close></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="quote-modal-title">
+    <button class="modal-close" type="button" aria-label="Close" data-quote-close>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-head">
+      <span class="eyebrow">Free quote</span>
+      <h2 id="quote-modal-title">Tell us about the property</h2>
+      <p>Fixed price, no call-out fee, no obligation. Or call <a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a> for a same-day answer.</p>
+    </div>
+    {quote_form(idp="qm", card=False)}
+  </div>
+</div>
+"""
+
+
+def site_footer(with_modal=True):
+    modal = quote_modal() if with_modal else ""
     svc_links = "".join('<li><a href="/services/%s/">%s</a></li>' % (s["slug"], s["nav"]) for s in SERVICES)
     area_links = "".join('<li><a href="/#areas">%s</a></li>' % s for s in
                          ["Frankston", "Frankston South", "Seaford", "Langwarrin",
@@ -405,7 +436,7 @@ def site_footer():
 
 <a href="tel:{BIZ['phone_link']}" class="callbar"><span>{svg('phone')} Call {BIZ['phone_display']}</span></a>
 
-<script src="/assets/js/site.js" defer></script>
+{modal}<script src="/assets/js/site.js" defer></script>
 </body>
 </html>
 """
@@ -443,7 +474,7 @@ def nap_list():
 </ul>"""
 
 
-def quote_form(preselect=None, heading=None):
+def quote_form(preselect=None, heading=None, idp="qf", card=True):
     """The quote form.
 
     Field names map 1:1 onto the GHL contact fields:
@@ -474,32 +505,34 @@ def quote_form(preselect=None, heading=None):
         hidden += '<input type="hidden" name="%s" value="%s">\n    ' % (k, v)
 
     head_html = '<h3 style="margin-bottom:18px">%s</h3>' % heading if heading else ""
-    return f"""<div class="contact-card">
+    open_card = '<div class="contact-card">' if card else ""
+    close_card = "</div>" if card else ""
+    return f"""{open_card}
   {head_html}<form class="quote-form" action="{FORM_ACTION}" method="{FORM_METHOD}">
     {hidden}<div class="form-grid">
       <div class="field">
-        <label for="qf-full_name">Name</label>
-        <input type="text" id="qf-full_name" name="full_name" required autocomplete="name" placeholder="Your name">
+        <label for="{idp}-full_name">Name</label>
+        <input type="text" id="{idp}-full_name" name="full_name" required autocomplete="name" placeholder="Your name">
       </div>
       <div class="field">
-        <label for="qf-email">Email</label>
-        <input type="email" id="qf-email" name="email" required autocomplete="email" placeholder="Enter your email">
+        <label for="{idp}-email">Email</label>
+        <input type="email" id="{idp}-email" name="email" required autocomplete="email" placeholder="Enter your email">
       </div>
       <div class="field">
-        <label for="qf-phone">Phone</label>
-        <input type="tel" id="qf-phone" name="phone" required autocomplete="tel" placeholder="Enter your phone">
+        <label for="{idp}-phone">Phone</label>
+        <input type="tel" id="{idp}-phone" name="phone" required autocomplete="tel" placeholder="Enter your phone">
       </div>
       <div class="field">
-        <label for="qf-service_needed">Service needed</label>
-        <select id="qf-service_needed" name="service_needed">{"".join(opts)}</select>
+        <label for="{idp}-service_needed">Service needed</label>
+        <select id="{idp}-service_needed" name="service_needed">{"".join(opts)}</select>
       </div>
       <div class="field full">
-        <label for="qf-property_address">Property address</label>
-        <input type="text" id="qf-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
+        <label for="{idp}-property_address">Property address</label>
+        <input type="text" id="{idp}-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
       </div>
       <div class="field full">
-        <label for="qf-job_notes">Job notes</label>
-        <textarea id="qf-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
+        <label for="{idp}-job_notes">Job notes</label>
+        <textarea id="{idp}-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
       </div>
       <div class="field full" style="margin-bottom:0">
         <button type="submit" class="btn-submit">Send my quote request</button>
@@ -507,7 +540,7 @@ def quote_form(preselect=None, heading=None):
       </div>
     </div>
   </form>
-</div>"""
+{close_card}"""
 
 
 def areas_grid():
@@ -726,14 +759,13 @@ HOME_TRAIL = [("Home", "/")]
 def page_home():
     return f"""{crumbs([]) if False else ''}<section class="hero">
   <div class="hero-media" aria-hidden="true">{picture('hero', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
     <span class="eyebrow">Frankston &amp; the Mornington Peninsula</span>
     <h1>Lawn Mowing &amp; Garden Maintenance in <em>Frankston</em></h1>
     <p class="hero-sub">Greenline Services is a local lawn and garden crew based on St Johns Ave. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
     <div class="hero-cta">
       <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Get a free quote</a>
+      <button type="button" class="btn-lg btn-ghost" data-quote-open>Get a free quote</button>
     </div>
     <div class="hero-strip">
       <div>{svg('check')}Frankston based, locally owned</div>
@@ -918,7 +950,6 @@ def page_service(sp):
         for p in sp["panels"])
     return f"""<section class="page-hero">
   <div class="hero-media" aria-hidden="true">{picture(s['img'], eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">{sp['eyebrow']}</span>
@@ -1335,7 +1366,6 @@ def page_services():
     trail = [("Home", "/"), ("Services", None)]
     return f"""<section class="page-hero">
   <div class="hero-media" aria-hidden="true">{picture('work-peninsula', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">All services</span>
@@ -1343,7 +1373,7 @@ def page_services():
     <p class="hero-sub">Everything Greenline Services does, in one place. Lawn mowing services in Frankston and across the Peninsula, plus gutters, hedges, gardens, green waste and full clean-ups &mdash; bookable together on a single visit.</p>
     <div class="hero-cta">
       <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Get a free quote</a>
+      <button type="button" class="btn-lg btn-ghost" data-quote-open>Get a free quote</button>
     </div>
   </div>
 </section>
@@ -1434,7 +1464,6 @@ def page_about():
     trail = [("Home", "/"), ("About", None)]
     return f"""<section class="page-hero">
   <div class="hero-media" aria-hidden="true">{picture('about-dave', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">About us</span>
@@ -1442,7 +1471,7 @@ def page_about():
     <p class="hero-sub">A local lawn and garden business run out of St Johns Ave by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
     <div class="hero-cta">
       <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Get a free quote</a>
+      <button type="button" class="btn-lg btn-ghost" data-quote-open>Get a free quote</button>
     </div>
   </div>
 </section>
@@ -1563,17 +1592,26 @@ CONTACT_FAQS = [
 
 def page_contact():
     trail = [("Home", "/"), ("Contact", None)]
-    return f"""<section class="page-hero">
+    return f"""<section class="page-hero hero-form">
   <div class="hero-media" aria-hidden="true">{picture('work-edging', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
-    {crumbs(trail)}
-    <span class="eyebrow">Get in touch</span>
-    <h1>Contact Greenline Services &mdash; Free Quotes in Frankston</h1>
-    <p class="hero-sub">Call for the fastest answer, or send the form and we will come back to you with a fixed price. No call-out fee, no obligation.</p>
-    <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="mailto:{BIZ['email']}" class="btn-lg btn-ghost">{svg('mail')} Email us</a>
+    <div class="hero-split">
+      <div class="hero-copy">
+        {crumbs(trail)}
+        <span class="eyebrow">Get in touch</span>
+        <h1>Contact Greenline Services &mdash; Free Quotes in Frankston</h1>
+        <p class="hero-sub">Fill in the form and we will come back to you with a fixed price, usually the same day. No call-out fee, no obligation.</p>
+        <div class="hero-cta">
+          <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
+          <a href="mailto:{BIZ['email']}" class="btn-lg btn-ghost">{svg('mail')} Email us</a>
+        </div>
+        <div class="hero-strip">
+          <div>{svg('check')}Free quotes</div>
+          <div>{svg('check')}No call-out fee</div>
+          <div>{svg('check')}Same-day phone answers</div>
+        </div>
+      </div>
+      <div id="quote">{quote_form(heading='Request a free quote')}</div>
     </div>
   </div>
 </section>
@@ -1581,10 +1619,10 @@ def page_contact():
 <div class="trustbar">
   <div class="wrap">
     <ul>
-      <li>{svg('check')}Free quotes</li>
-      <li>{svg('check')}No call-out fee</li>
-      <li>{svg('check')}Same-day phone answers</li>
       <li>{svg('check')}Mon&ndash;Fri 7am&ndash;5pm, Sat 8am&ndash;2pm</li>
+      <li>{svg('check')}Fixed prices, not hourly rates</li>
+      <li>{svg('check')}18 suburbs across Frankston &amp; the Peninsula</li>
+      <li>{svg('check')}Residential &amp; commercial</li>
     </ul>
   </div>
 </div>
@@ -1593,35 +1631,24 @@ def page_contact():
 
 <section class="sec">
   <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Request a quote</span>
-      <h2>Tell us about the property</h2>
-      <p class="lede">The more detail you give &mdash; rough yard size, how long since it was last done, access notes &mdash; the closer the first number will be. If it is urgent, call rather than emailing.</p>
-    </div>
     <div class="contact-grid">
       <div>
+        <div class="sec-head" style="margin-bottom:26px">
+          <span class="eyebrow">Our details</span>
+          <h2>2/15 St Johns Ave, Frankston VIC 3199</h2>
+          <p class="lede">We are based in Frankston and work across the Frankston City suburbs and the Mornington Peninsula &mdash; from Seaford and Carrum Downs through to Mornington, Mount Martha and Tyabb.</p>
+        </div>
         {nap_list()}
         <div class="callout" style="margin-top:28px">
           <p><strong>Got a deadline?</strong> End-of-lease inspections and pre-sale photography dates get priority. Tell us the date when you call and we will work backwards from it.</p>
         </div>
       </div>
-      {quote_form()}
+      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
     </div>
   </div>
 </section>
 
 <section class="sec sec-alt">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Find us</span>
-      <h2>2/15 St Johns Ave, Frankston VIC 3199</h2>
-      <p class="lede">We are based in Frankston and work across the Frankston City suburbs and the Mornington Peninsula &mdash; from Seaford and Carrum Downs through to Mornington, Mount Martha and Tyabb.</p>
-    </div>
-    {map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}
-  </div>
-</section>
-
-<section class="sec">
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Where we work</span>
@@ -1631,7 +1658,7 @@ def page_contact():
   </div>
 </section>
 
-<section class="sec sec-alt">
+<section class="sec">
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Common questions</span>
@@ -1646,7 +1673,6 @@ def page_contact():
 {cta_band('Call and get a number today', 'Free fixed-price quotes on lawn mowing, gutters, hedges, gardens and clean-ups across Frankston and the Peninsula.')}"""
 
 
-# ================================================================== BUILD
 def build_pages():
     pages = []
 
@@ -1717,7 +1743,7 @@ def build_pages():
         "active": "contact",
         "title": "Contact Greenline Services | Free Quote Frankston VIC",
         "desc": "Contact Greenline Services in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0494 154 184 or send the quote form.",
-        "body": page_contact(),
+        "body": page_contact(), "modal": False,
         "schema": [faq_schema(CONTACT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Contact", "/contact/")]),
                    contact_page_schema()],
@@ -1749,7 +1775,6 @@ def contact_page_schema():
 
 def page_thanks():
     return f"""<section class="page-hero">
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
     <span class="eyebrow">Request received</span>
     <h1>Thanks &mdash; we&rsquo;ve got your details</h1>
@@ -1828,9 +1853,10 @@ BANNER = ("<!-- Generated by tools/build.py — edit the content there, not here
 
 
 def render(page):
+    has_modal = page.get("modal", True)
     out = [head(page), BANNER,
-           site_header(page["active"], solid=page["path"] != "/"),
-           page["body"], site_footer()]
+           site_header(page["active"], solid=page["path"] != "/", modal_cta=has_modal),
+           page["body"], site_footer(with_modal=has_modal)]
     doc = "".join(out)
     # schema goes just before </body>
     schema = "".join(jsonld(s) for s in page["schema"])

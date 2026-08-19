@@ -100,6 +100,26 @@ deliberately has no submit handler on the form. Adding one that calls
 `preventDefault()` on a valid submit will silently stop every lead reaching the
 CRM — the form will still look like it works.
 
+### Two forms per page
+
+Most pages carry two copies of the form: the inline one, and the quote popup
+(`#quote-modal`) that the header CTA and section CTAs open. Both are real
+`<form>` elements in the DOM with the same six field names, so GHL captures
+whichever is submitted.
+
+Their ids are prefixed (`qf-` inline, `qm-` modal) so they never collide —
+`tools/check.py` fails on duplicate ids and validates *every* form on a page,
+not just the first.
+
+The contact page is the exception: its form sits in the hero, so it ships no
+modal and the header CTA scrolls to the form instead. Any `data-quote-open`
+trigger falls back gracefully — modal if present, otherwise scroll to `#quote`,
+otherwise follow the link to `/contact/`.
+
+The popup is keyboard-accessible: `role="dialog"`, `aria-modal`, focus moves to
+the first field on open, Tab is trapped inside it, Escape and the backdrop
+close it, and focus returns to the trigger.
+
 ### Where submissions go
 
 `FORM_ACTION` in `tools/build.py` defaults to a `GET` to `/thank-you/`. That
