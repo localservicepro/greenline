@@ -167,6 +167,8 @@ h3{font-size:1.18rem;letter-spacing:-.015em}
 .hero h1 em{font-style:normal;color:var(--fern)}
 .hero-sub{font-size:1.12rem;color:rgba(255,255,255,.82);max-width:58ch;margin-bottom:34px}
 .hero-cta{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:44px}
+/* the hero carries a single primary action, so give it real presence */
+.hero-cta .btn-lg{min-width:230px;padding-left:38px;padding-right:38px}
 .btn-lg svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .btn-lg{padding:16px 32px;font-size:1rem;border-radius:999px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:10px;
   transition:transform .2s ease,box-shadow .2s ease,background .2s ease;border:none;cursor:pointer;font-family:Karla,sans-serif;
@@ -394,12 +396,6 @@ footer a:hover{color:var(--fern)}
 .modal-head a{color:var(--moss);font-weight:700}
 body.modal-open{overflow:hidden}
 
-/* MOBILE CALL BAR */
-.callbar{display:none;position:fixed;bottom:0;left:0;width:100%;z-index:900;background:var(--moss);color:#fff;text-align:center;padding:15px;font-weight:700;
-  font-size:1rem;box-shadow:0 -6px 22px rgba(12,42,18,.24)}
-.callbar span{display:inline-flex;align-items:center;gap:9px}
-.callbar svg{width:17px;height:17px;stroke:#fff;fill:none;stroke-width:2.1}
-
 /* ---------- RESPONSIVE ---------- */
 @media(max-width:1040px){
   .dropdown-panel{width:560px}
@@ -422,8 +418,6 @@ body.modal-open{overflow:hidden}
   .page-hero.hero-form{padding:104px 0 64px}
   .hero-split{gap:34px}
   .split-media{order:-1}
-  .callbar{display:block}
-  body{padding-bottom:56px}
 }
 @media(max-width:600px){
   .wrap,.nav-inner,.hero-in{padding-left:20px;padding-right:20px}

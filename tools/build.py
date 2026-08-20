@@ -427,8 +427,6 @@ def site_footer(with_modal=True):
   </div>
 </footer>
 
-<a href="tel:{BIZ['phone_link']}" class="callbar"><span>{svg('phone')} Call {BIZ['phone_display']}</span></a>
-
 {modal}<script src="/assets/js/site.js" defer></script>
 </body>
 </html>
@@ -762,8 +760,7 @@ def page_home():
     <h1>Lawn Mowing &amp; Garden Maintenance in <em>Frankston</em></h1>
     <p class="hero-sub">Greenline Services is a local lawn and garden crew based on St Johns Ave. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <button type="button" class="btn-lg btn-ghost" data-quote-open>Get a free quote</button>
+      <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
     <div class="hero-strip">
       <div>{svg('check')}Frankston based, locally owned</div>
@@ -954,8 +951,7 @@ def page_service(sp):
     <h1>{sp['h1']}</h1>
     <p class="hero-sub">{sp['sub']}</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="#quote" class="btn-lg btn-ghost">Get a free quote</a>
+      <a href="#quote" class="btn-lg btn-solid">Get a free quote</a>
     </div>
   </div>
 </section>
@@ -1370,8 +1366,7 @@ def page_services():
     <h1>Lawn Mowing Services in Frankston &amp; Property Care</h1>
     <p class="hero-sub">Everything Greenline Services does, in one place. Lawn mowing services in Frankston and across the Peninsula, plus gutters, hedges, gardens, green waste and full clean-ups &mdash; bookable together on a single visit.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <button type="button" class="btn-lg btn-ghost" data-quote-open>Get a free quote</button>
+      <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
   </div>
 </section>
@@ -1468,8 +1463,7 @@ def page_about():
     <h1>About Greenline Services, Frankston</h1>
     <p class="hero-sub">A local lawn and garden business run out of St Johns Ave by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <button type="button" class="btn-lg btn-ghost" data-quote-open>Get a free quote</button>
+      <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
   </div>
 </section>
@@ -1600,7 +1594,6 @@ def page_contact():
         <h1>Contact Greenline Services &mdash; Free Quotes in Frankston</h1>
         <p class="hero-sub">Fill in the form and we will come back to you with a fixed price, usually the same day. No call-out fee, no obligation.</p>
         <div class="hero-cta">
-          <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
           <a href="mailto:{BIZ['email']}" class="btn-lg btn-ghost">{svg('mail')} Email us</a>
         </div>
         <div class="hero-strip">
@@ -1778,8 +1771,7 @@ def page_thanks():
     <h1>Thanks &mdash; we&rsquo;ve got your details</h1>
     <p class="hero-sub">Your quote request has come through to Greenline Services. {BIZ['owner']} will get back to you with a fixed price, usually the same day and always within one business day.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/" class="btn-lg btn-ghost">Back to the homepage</a>
+      <a href="/" class="btn-lg btn-solid">Back to the homepage</a>
     </div>
   </div>
 </section>
