@@ -81,20 +81,43 @@ FORM_REDIRECT_FIELD = None      # hidden redirect field name, if the endpoint ne
 FORM_HIDDEN = {}                # any extra hidden inputs the endpoint needs
 
 # ---------------------------------------------------------------------- images
-# Generated with Recraft V4.1 for this build. Run tools/localise-images.sh from a
-# machine with open internet access to pull them into assets/img/ and flip the
-# switch below to serve them from the site's own domain.
-USE_LOCAL_IMAGES = False
-IMG_CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_3EWpoiN6nlg900Jz4gzZzRlxgtK/"
-IMG_REMOTE = {}          # filled in by the IMAGES block appended below
-IMG_ALT = {}
+# Real job photography supplied by the client (Google Drive), resized and
+# compressed for the web. Nothing here is stock or generated.
+IMG_FILES = {
+    "hero":               "hero.jpg",
+    "lawn-mowing":        "lawn-mowing.jpg",
+    "gutter-cleaning":    "gutter-cleaning.jpg",
+    "garden-maintenance": "garden-maintenance.jpg",
+    "hedge-trimming":     "hedge-trimming.jpg",
+    "rubbish-removal":    "rubbish-removal.jpg",
+    "garden-clean-ups":   "garden-clean-ups.jpg",
+    "about-dave":         "about-dave.jpg",
+    "work-weeding":       "work-weeding.jpg",
+    "work-hedge":         "work-hedge.jpg",
+    "work-garden":        "work-garden.jpg",
+    "og":                 "og.jpg",
+}
+
+# Alt text describes what is actually in each frame — keyword-relevant, but
+# never claiming more than the photo shows.
+IMG_ALT = {
+    "hero": "Front garden in Frankston maintained by Greenline Services, with a mown lawn, clipped shrubs and a swept gravel drive",
+    "lawn-mowing": "Mown and edged back lawn beside a freshly trimmed hedge on a Mornington Peninsula property",
+    "gutter-cleaning": "Blocked gutter on a Frankston home with grass growing out of it, before a Greenline Services gutter clean",
+    "garden-maintenance": "Tidied garden bed with pebble mulch and shaped native shrubs during a regular garden maintenance visit in Frankston",
+    "hedge-trimming": "Long hedge cut square and level in Frankston, with the hedge trimmer resting on the mown lawn",
+    "rubbish-removal": "Trimmed hedge and cleared green waste at a Frankston property, with bins out at the kerb",
+    "garden-clean-ups": "Driveway and garden cleared and blown down after a property clean-up in Frankston",
+    "about-dave": "Greenline Services ladder set against a long hedge mid-trim on a Frankston job",
+    "work-weeding": "Close-up of weed control being applied through turf during a Greenline Services garden maintenance visit",
+    "work-hedge": "Tall hedge shaped square on all faces beside a Frankston driveway",
+    "work-garden": "Trimmed hedges, mown lawn and a swept driveway after a Greenline Services visit",
+    "og": "Greenline Services — lawn mowing, hedge trimming and garden maintenance in Frankston and the Mornington Peninsula",
+}
 
 
 def img(key):
-    """Resolve a logical image name to a URL."""
-    if USE_LOCAL_IMAGES:
-        return "/assets/img/%s.png" % key
-    return IMG_CDN + IMG_REMOTE[key]
+    return "/assets/img/" + IMG_FILES[key]
 
 
 def picture(key, cls="", sizes=None, eager=False, extra=""):
@@ -186,44 +209,13 @@ def svg(name, cls="", size=None):
     return '<svg viewBox="0 0 24 24"%s%s aria-hidden="true">%s</svg>' % (attrs, dim, IC[name])
 
 
-# --------------------------------------------------------------------- IMAGES
-IMG_REMOTE.update({
-    "hero":                 "hf_20260819_123233_fa5a8a1c-cabc-4249-a8c6-059d46080806.png",
-    "lawn-mowing":          "hf_20260819_123233_260d5f73-7fb3-44cd-96c8-ff8bbbab7b43.png",
-    "gutter-cleaning":      "hf_20260819_123233_0dfd591f-fffa-4d91-9506-bb7904fb736d.png",
-    "garden-maintenance":   "hf_20260819_123233_c6cafff7-a0ca-4f67-8d4a-fab24d3e695d.png",
-    "hedge-trimming":       "hf_20260819_123233_1e21adb0-7221-4fbd-a5da-2cca2e051a8e.png",
-    "rubbish-removal":      "hf_20260819_123233_4da63f9f-98bc-43e0-8a89-d1edb27732a3.png",
-    "garden-clean-ups":     "hf_20260819_123529_50a8bac6-6f5d-445d-93e2-99c2747b66c5.png",
-    "about-dave":           "hf_20260819_123529_a7040eb6-a422-44ad-9608-2e3a1453bb0d.png",
-    "work-edging":          "hf_20260819_123233_5dd26d6f-c9dc-4d20-bd52-627396a03585.png",
-    "work-peninsula":       "hf_20260819_123233_1e6435e5-9980-406d-83d0-8c1fc9fe7df1.png",
-    "work-gutters":         "hf_20260819_123233_355bf930-b6ad-4fe7-bae0-9766e62b10c5.png",
-    "og":                   "hf_20260819_123233_8da94588-3ea2-44be-aed5-f3dff83853e7.png",
-})
-
-# Alt text: keyword-relevant but written for a person, per the SEO brief.
-IMG_ALT.update({
-    "hero": "Freshly mown Frankston front lawn with striped grass and a trimmed hedge after a Greenline Services visit",
-    "lawn-mowing": "Greenline Services worker mowing a large backyard lawn in Mornington with a catcher mower",
-    "gutter-cleaning": "Gutter cleaning in Frankston — a Greenline Services technician clearing leaves from the gutter of a brick home",
-    "garden-maintenance": "Frankston gardener weeding and mulching a native garden bed during a regular garden maintenance visit",
-    "hedge-trimming": "Hedge trimming in Frankston — a tall garden hedge being cut level with a petrol hedge trimmer",
-    "rubbish-removal": "Green waste and rubbish removal in Frankston with a trailer loaded with branches and hedge clippings",
-    "garden-clean-ups": "End-of-lease garden clean up in Frankston with the lawn cut and edged and the beds weeded for inspection",
-    "about-dave": "Dave Coelho of Greenline Services with the work ute and mowing trailer on a Frankston street",
-    "work-edging": "Sharp lawn edge cut along a concrete path beside a striped freshly mown Frankston lawn",
-    "work-peninsula": "Tidy coastal front garden on the Mornington Peninsula maintained by Greenline Services",
-    "work-gutters": "Clean, clear roof gutter and downpipe on a Frankston home after a Greenline Services gutter clean",
-    "og": "Greenline Services — lawn mowing, garden maintenance and gutter cleaning in Frankston and the Mornington Peninsula",
-})
 
 
 # ------------------------------------------------------------------ page chrome
 def head(page):
     """<head> for one page."""
     url = SITE + page["path"]
-    og_img = img("og") if not USE_LOCAL_IMAGES else SITE + "/assets/img/og.png"
+    og_img = SITE + img("og")
     depth_css = "/assets/css/site.css"
     extra = page.get("head_extra", "")
     robots = page.get("robots", "index, follow, max-image-preview:large, max-snippet:-1")
@@ -236,7 +228,7 @@ def head(page):
 <meta name="description" content="{page['desc']}">
 <link rel="canonical" href="{url}">
 <meta name="robots" content="{robots}">
-<meta name="theme-color" content="#0E1F18">
+<meta name="theme-color" content="#0C2A12">
 <meta name="geo.region" content="AU-VIC">
 <meta name="geo.placename" content="Frankston, Victoria">
 <meta name="geo.position" content="{BIZ['lat']};{BIZ['lng']}">
@@ -257,6 +249,9 @@ def head(page):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="stylesheet" href="{depth_css}">
 
 {GHL_TRACKING}{extra}</head>
@@ -287,7 +282,7 @@ def site_header(active, solid=False, modal_cta=True):
     return f"""<header class="site-header{' solid' if solid else ''}" id="top">
   <div class="nav-inner">
     <a href="/" class="brand" aria-label="Greenline Services home">
-      <span class="brand-mark" aria-hidden="true">{svg('leaf')}</span>
+      <span class="brand-mark"><img src="/assets/img/logo-mark.png" alt="Greenline Services logo" width="512" height="512" decoding="async"></span>
       <span class="brand-name">Greenline Services</span>
     </a>
 
@@ -401,7 +396,7 @@ def site_footer(with_modal=True):
     <div class="f-grid">
       <div class="f-about">
         <a href="/" class="brand">
-          <span class="brand-mark" aria-hidden="true">{svg('leaf')}</span>
+          <span class="brand-mark"><img src="/assets/img/logo-mark.png" alt="Greenline Services logo" width="512" height="512" loading="lazy" decoding="async"></span>
           <span class="brand-name">Greenline Services</span>
         </a>
         <p>Lawn, garden and property maintenance for Frankston and the Mornington Peninsula. Locally owned and run by {BIZ['owner']}.</p>
@@ -564,10 +559,15 @@ def service_cards(exclude=None, limit=None):
     return '<div class="svc-grid">%s</div>' % "".join(out)
 
 
+# Captions describe the job in the frame. No suburb is named unless it is known,
+# so nothing here invents a location for a real client's property.
 WORK = [
-    ("work-edging", "Lawn edging, Frankston", "Weekly round on a Frankston South property &mdash; mown, caught and edged along every path and drive."),
-    ("work-peninsula", "Front garden, Mount Eliza", "Fortnightly maintenance on a coastal Peninsula block: hedges shaped, beds weeded, lawn kept even."),
-    ("work-gutters", "Gutter clean, Seaford", "Full gutter and downpipe clear before storm season, with all debris bagged and taken away."),
+    ("work-hedge", "Hedge shaped square",
+     "A tall screening hedge cut level on every face and the clippings taken away the same day."),
+    ("work-weeding", "Weed control through turf",
+     "Spot-treating weeds through the lawn on a regular maintenance round, before they seed and spread."),
+    ("work-garden", "Trimmed, mown and blown down",
+     "Hedges cut, lawn mown and edged, and the driveway blown clean before we left the property."),
 ]
 
 
@@ -640,7 +640,7 @@ def local_business_schema():
   "priceRange": "$$",
   "currenciesAccepted": "AUD",
   "paymentAccepted": "Cash, Bank transfer, Card",
-  "image": "{img('og') if not USE_LOCAL_IMAGES else SITE + '/assets/img/og.png'}",
+  "image": "{SITE + img('og')}",
   "address": {{
     "@type": "PostalAddress",
     "streetAddress": "{BIZ['street']}",
@@ -1363,7 +1363,7 @@ HUB_FAQS = [
 def page_services():
     trail = [("Home", "/"), ("Services", None)]
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture('work-peninsula', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('work-garden', eager=True)}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">All services</span>
@@ -1413,7 +1413,7 @@ def page_services():
           <p><strong>Managing more than one property?</strong> Send the addresses and how often each needs attention and we will price the lot together.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-edging')}</div>
+      <div class="split-media">{picture('work-hedge')}</div>
     </div>
   </div>
 </section>
@@ -1591,7 +1591,7 @@ CONTACT_FAQS = [
 def page_contact():
     trail = [("Home", "/"), ("Contact", None)]
     return f"""<section class="page-hero hero-form">
-  <div class="hero-media" aria-hidden="true">{picture('work-edging', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('work-garden', eager=True)}</div>
   <div class="hero-in">
     <div class="hero-split">
       <div class="hero-copy">
@@ -1811,7 +1811,7 @@ def page_thanks():
           <p><strong>In a hurry?</strong> If you have an inspection date, a photography booking or a storm on the way, call {BIZ['phone_display']} rather than waiting on the email. We prioritise jobs with a hard deadline.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-peninsula')}</div>
+      <div class="split-media">{picture('work-garden')}</div>
     </div>
   </div>
 </section>

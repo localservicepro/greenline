@@ -154,31 +154,58 @@ to load — a real endpoint gives you a second copy.
 the request, sets the callback expectation, and cross-sells three services.
 It is a clean conversion trigger for a GHL workflow or a GA4 goal.
 
-## Images — one action needed before launch
+## Brand
 
-The 12 photographs were generated with Recraft V4.1 and currently load from the
-generator's CDN. **Before this site goes live, pull them onto the client's own
-domain:**
+Palette sampled directly from the client's logo artwork:
 
-```bash
-bash tools/localise-images.sh
-python3 tools/build.py
-```
+| Token | Hex | Source |
+|---|---|---|
+| `--brand-leaf` / `--moss` | `#19551D` | deep green of the leaves |
+| `--brand-fresh` | `#498526` | the ring / grass swoosh |
+| `--brand-char` / `--text` | `#262626` | "LINE" in the wordmark |
+| `--fern` | `#6FB93A` | lightened tint of the ring green |
+| `--ink` | `#0C2A12` | dark sections, derived from the leaf green |
 
-That downloads everything into `assets/img/`, flips `USE_LOCAL_IMAGES` in the
-build script, and rebuilds so nothing points off-domain. Recommended follow-up
-for Core Web Vitals — convert to WebP and resize the hero:
+`--fern` is a deliberate departure. The raw ring green `#498526` only reaches
+**3.44:1** against the dark ink and fails WCAG AA for text, so accents on dark
+backgrounds use `#6FB93A` (**6.40:1**) — same hue family, legible. The true ring
+green is kept as `--brand-fresh` for light surfaces.
 
-```bash
-for f in assets/img/*.png; do cwebp -q 82 "$f" -o "${f%.png}.webp"; done
-```
+Every sampled text/background pair on the rendered pages passes WCAG AA. `--text-3`
+was darkened from `#87908A` to `#666F69` for this reason — the old value was 3.29:1.
 
-Alt text for every image lives in `IMG_ALT` in `tools/build.py` and is written
-for a person, with the keyword carried naturally.
+Logo files in `assets/img/`: `logo-mark.png` (the circular mark, background knocked
+out and un-premultiplied so it carries no white fringe onto dark), `logo-lockup.png`
+(horizontal lockup with wordmark), plus `favicon-32`, `apple-touch-icon`, `icon-192`
+and `icon-512`. The header and footer use the mark on a white chip so it stays
+legible against both the transparent-over-hero and the scrolled-light header.
 
----
+## Images
 
-## SEO / GEO / AEO implementation
+All photography is the client's own job photos, supplied via Google Drive, resized
+and compressed here (~3.9 MB total for 12 images). Nothing is stock or generated.
+
+Alt text lives in `IMG_ALT` in `tools/build.py` and describes what is actually in
+each frame.
+
+**Gaps in the photo set.** The supplied photos are heavily weighted to hedge
+trimming. There are no photos of:
+
+- lawn mowing in progress (no mower, no striped lawn)
+- a loaded trailer or green-waste removal
+- an end-of-lease before/after
+- Dave, or the crew, or a branded vehicle
+
+Those slots currently use the closest honest match from the set — a mown lawn for
+the lawn mowing page, a trimmed hedge with bins at the kerb for rubbish removal, a
+cleared driveway for clean-ups, a ladder against a hedge for the About page. The
+alt text does not claim more than each photo shows. Better photos for those four
+would lift the pages noticeably.
+
+The only gutter photo is a "before" shot — grass growing out of a blocked gutter.
+It works as a problem/solution image but a finished-gutter shot would be stronger.
+
+## SEO / GEO / AEO implementation## SEO / GEO / AEO implementation
 
 **On-page**
 - One `<h1>` per page, containing the target keyword
@@ -217,7 +244,6 @@ for a person, with the keyword carried naturally.
 
 - [ ] Register `greenlineservices.com.au` and enable HTTPS
 - [ ] Confirm `SITE` in `tools/build.py` matches the live domain, then rebuild
-- [ ] Run `tools/localise-images.sh` so no images load from an external CDN
 - [ ] Enable Form Analytics and Form Submissions in GHL settings
 - [ ] Create the `property_address`, `service_needed` and `job_notes` custom
       fields in GHL
