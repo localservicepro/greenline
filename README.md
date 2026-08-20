@@ -297,6 +297,59 @@ a portrait would be the three highest-value additions.
 - [ ] Add the website URL to the Google Business Profile
 - [ ] Test the rendered schema in Google's Rich Results Test
 
+## Performance
+
+Mobile-first, measured rather than guessed. What a 412px phone downloads:
+
+| | Before | After |
+|---|---|---|
+| Initial load (no scroll) | ~1.1 MB | **277 KB** |
+| Hero image | 544 KB | **75 KB** |
+| Whole page, fully scrolled | 2.1 MB | **1.4 MB** |
+
+Local Lighthouse (mobile emulation): performance 99, CLS 0, TBT 0 ms.
+
+What was done:
+
+- **Responsive images.** `tools/gen-images.py` emits 480/800/1200/1600px
+  variants plus `assets/img/manifest.json`; `tools/build.py` reads the manifest
+  and writes `srcset` with a per-slot `sizes`. Phones were downloading 1600–2000px
+  files for a 412px screen. The 800px step sits just above what a 412px phone at
+  1.75x needs (721px), so mobile stops jumping to a 960px file it never uses.
+- **Correct intrinsic dimensions.** Every `<img>` previously declared
+  `width="1200" height="900"` regardless of the actual file — wrong on the hero
+  (16:9), the About photo (3:2) and the logo. Now taken from the manifest, so the
+  browser reserves the right box. CLS measured at 0 on every page.
+- **Unblocked the head.** The GHL tracking script had no `defer` and was
+  render-blocking; the font stylesheet was blocking too. The script is deferred
+  (it still loads long before anyone can submit) and fonts load via
+  `preload` + `media="print"` swap with a `<noscript>` fallback.
+- **Trimmed the font request.** Dropped Fraunces 400 and Karla 300 — declared in
+  the URL, used by nothing.
+- **Preloaded the LCP image** per page, with `imagesrcset` so the preload matches
+  the variant the browser picks.
+- **Logo.** The header rendered a 512px, 90 KB PNG in a 30px slot. Now a 9 KB
+  120px file; the 512px original is kept for the PWA icons.
+- **Minified CSS** into `site.min.css`. The minifier deliberately leaves spaces
+  around `+` and `-` alone, because the stylesheet uses `calc(100% - var(--pos))`
+  and stripping those breaks it silently. Verified by comparing computed styles
+  and bounding boxes for 2,519 elements across four renders — zero differences.
+- **`vercel.json`** sets a one-year immutable cache on `/assets/*` plus a few
+  security headers. Routing is left alone deliberately: the deployment already
+  resolves directory URLs correctly, and adding `cleanUrls`/`trailingSlash` would
+  change that.
+
+Regenerate variants after adding or replacing any photo:
+
+```bash
+python3 tools/gen-images.py && python3 tools/build.py && python3 tools/check.py
+```
+
+Still on the table if more is needed: a click-to-load facade for the Google Maps
+embed (it is lazy and below the fold, so it does not affect the mobile score much,
+but it is the heaviest third party on the site), and self-hosting the two fonts to
+remove the `fonts.googleapis.com` round trip entirely.
+
 ## Verifying
 
 `tools/check.py` runs the whole suite — HTML nesting, JSON-LD parsing, one h1

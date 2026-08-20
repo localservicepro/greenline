@@ -27,13 +27,17 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Karla:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Karla:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900&family=Karla:wght@400;500;600;700&display=swap"></noscript>
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
-<link rel="stylesheet" href="/assets/css/site.css">
+<link rel="stylesheet" href="/assets/css/site.min.css">
+<link rel="preload" as="image" href="/assets/img/about-dave.jpg" imagesrcset="/assets/img/about-dave-480.jpg 480w, /assets/img/about-dave-800.jpg 800w, /assets/img/about-dave-1200.jpg 1200w, /assets/img/about-dave.jpg 1600w" imagesizes="100vw" fetchpriority="high">
 
-<script 
+
+<script defer
   src="https://link.msgsndr.com/js/external-tracking.js"
   data-tracking-id="tk_9f5144f196b340e59b8396dd9921dc07">
 </script>
@@ -44,7 +48,7 @@
 <header class="site-header solid" id="top">
   <div class="nav-inner">
     <a href="/" class="brand" aria-label="Greenline Services home">
-      <span class="brand-mark"><img src="/assets/img/logo-mark.png" alt="Greenline Services logo" width="512" height="512" decoding="async"></span>
+      <span class="brand-mark"><img src="/assets/img/logo-mark-120.png" alt="Greenline Services logo" width="120" height="120" decoding="async"></span>
       <span class="brand-name">Greenline Services</span>
     </a>
 
@@ -114,7 +118,7 @@
   <a href="tel:+61494154184">Call 0494 154 184</a>
 </nav>
 <section class="page-hero">
-  <div class="hero-media" aria-hidden="true"><img src="/assets/img/about-dave.jpg" alt="Tidy front garden in Frankston with clipped shrubs, a swept aggregate path and a mown lawn" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async"></div>
+  <div class="hero-media" aria-hidden="true"><img src="/assets/img/about-dave.jpg" srcset="/assets/img/about-dave-480.jpg 480w, /assets/img/about-dave-800.jpg 800w, /assets/img/about-dave-1200.jpg 1200w, /assets/img/about-dave.jpg 1600w" sizes="100vw" alt="Tidy front garden in Frankston with clipped shrubs, a swept aggregate path and a mown lawn" width="1600" height="1067" loading="eager" fetchpriority="high" decoding="async"></div>
   <div class="hero-in">
     <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="/">Home</a></li><li><span aria-current="page">About</span></li></ol></nav>
     <span class="eyebrow">About us</span>
@@ -153,7 +157,7 @@
         <p>Fixed quotes, given free after we have seen the property. Not an hourly rate. An hourly rate rewards working slowly and leaves you watching the clock from the kitchen window, which is a strange way to run a relationship with someone who is at your house every fortnight.</p>
         <p>If a job turns out to be bigger than it looked, we tell you before we start rather than after we finish. And if what you actually need is not something we do, we say so &mdash; you are better off with the right trade than with us having a go at it.</p>
       </div>
-      <div class="split-media tall"><img src="/assets/img/garden-maintenance.jpg" alt="Garden bed remulched and re-edged beside a mown lawn during a regular garden maintenance visit in Frankston" width="1200" height="900" loading="lazy" decoding="async"></div>
+      <div class="split-media tall"><img src="/assets/img/garden-maintenance.jpg" srcset="/assets/img/garden-maintenance-480.jpg 480w, /assets/img/garden-maintenance-800.jpg 800w, /assets/img/garden-maintenance-1200.jpg 1200w, /assets/img/garden-maintenance.jpg 1600w" sizes="(max-width:900px) 100vw, 50vw" alt="Garden bed remulched and re-edged beside a mown lawn during a regular garden maintenance visit in Frankston" width="1600" height="1200" loading="lazy" decoding="async"></div>
     </div>
   </div>
 </section>
@@ -181,7 +185,7 @@
       <h2>Properties we look after</h2>
       <p class="lede">Regular rounds, coastal gardens and gutter cleans from around Frankston and the Peninsula.</p>
     </div>
-    <div class="work-grid"><figure class="work"><img src="/assets/img/work-lawn.jpg" alt="Sloping back lawn mown and edged with the garden beds cut clean around it" width="1200" height="900" loading="lazy" decoding="async"><figcaption><b>Mown, caught and edged</b>A regular round: the lawn cut and caught, then every edge along the paths and beds cut clean.</figcaption></figure><figure class="work"><img src="/assets/img/work-hedge.jpg" alt="Shaped topiary hedging along a pool surround, cut square and level" width="1200" height="900" loading="lazy" decoding="async"><figcaption><b>Hedges shaped square</b>Pool-surround hedging cut level on every face, with the clippings taken away the same day.</figcaption></figure><figure class="work"><img src="/assets/img/work-garden.jpg" alt="Maintained back garden with a mown lawn, edged beds and the paths blown clean" width="1200" height="900" loading="lazy" decoding="async"><figcaption><b>The whole property kept tidy</b>Lawn mown, beds edged and mulched, and the paths blown down before we left.</figcaption></figure></div>
+    <div class="work-grid"><figure class="work"><img src="/assets/img/work-lawn.jpg" srcset="/assets/img/work-lawn-480.jpg 480w, /assets/img/work-lawn-800.jpg 800w, /assets/img/work-lawn.jpg 1200w" sizes="(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px" alt="Sloping back lawn mown and edged with the garden beds cut clean around it" width="1200" height="900" loading="lazy" decoding="async"><figcaption><b>Mown, caught and edged</b>A regular round: the lawn cut and caught, then every edge along the paths and beds cut clean.</figcaption></figure><figure class="work"><img src="/assets/img/work-hedge.jpg" srcset="/assets/img/work-hedge-480.jpg 480w, /assets/img/work-hedge-800.jpg 800w, /assets/img/work-hedge.jpg 1200w" sizes="(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px" alt="Shaped topiary hedging along a pool surround, cut square and level" width="1200" height="900" loading="lazy" decoding="async"><figcaption><b>Hedges shaped square</b>Pool-surround hedging cut level on every face, with the clippings taken away the same day.</figcaption></figure><figure class="work"><img src="/assets/img/work-garden.jpg" srcset="/assets/img/work-garden-480.jpg 480w, /assets/img/work-garden-800.jpg 800w, /assets/img/work-garden.jpg 1200w" sizes="(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px" alt="Maintained back garden with a mown lawn, edged beds and the paths blown clean" width="1200" height="900" loading="lazy" decoding="async"><figcaption><b>The whole property kept tidy</b>Lawn mown, beds edged and mulched, and the paths blown down before we left.</figcaption></figure></div>
   </div>
 </section>
 
@@ -290,7 +294,7 @@
     <div class="f-grid">
       <div class="f-about">
         <a href="/" class="brand">
-          <span class="brand-mark"><img src="/assets/img/logo-mark.png" alt="Greenline Services logo" width="512" height="512" loading="lazy" decoding="async"></span>
+          <span class="brand-mark"><img src="/assets/img/logo-mark-120.png" alt="Greenline Services logo" width="120" height="120" loading="lazy" decoding="async"></span>
           <span class="brand-name">Greenline Services</span>
         </a>
         <p>Lawn, garden and property maintenance for Frankston and the Mornington Peninsula. Locally owned and run by Dave Coelho.</p>

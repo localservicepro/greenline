@@ -14,11 +14,16 @@ NOTE: edit content HERE, not in the generated .html files — a rebuild overwrit
 import os
 import re
 import html
+import json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ---------------------------------------------------------------- business data
 SITE = "https://greenlineservices.com.au"
+
+# Only the weights the stylesheet actually uses: Fraunces 600/700/900, Karla 400-700.
+FONT_HREF = ("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900"
+             "&family=Karla:wght@400;500;600;700&display=swap")
 BIZ = {
     "name": "Greenline Services",
     "street": "2/15 St Johns Ave",
@@ -54,7 +59,7 @@ GMB_EMBED = (
 # in the page DOM, every field needs a name attribute, and nothing may call
 # preventDefault() on a valid submit. See README.
 GHL_TRACKING = (
-    '<script \n'
+    '<script defer\n'
     '  src="https://link.msgsndr.com/js/external-tracking.js"\n'
     '  data-tracking-id="tk_9f5144f196b340e59b8396dd9921dc07">\n'
     '</script>\n'
@@ -128,16 +133,52 @@ IMG_ALT = {
 }
 
 
+# Responsive variants + real intrinsic dimensions, written by tools/gen-images.py.
+# Read here with the stdlib so this build script keeps zero dependencies.
+_MANIFEST_PATH = os.path.join(ROOT, "assets", "img", "manifest.json")
+try:
+    with open(_MANIFEST_PATH, encoding="utf-8") as _fh:
+        IMG_META = json.load(_fh)
+except FileNotFoundError:       # not generated yet — fall back to plain <img>
+    IMG_META = {}
+
+
 def img(key):
     return "/assets/img/" + IMG_FILES[key]
 
 
+def _meta(key):
+    return IMG_META.get(os.path.splitext(IMG_FILES[key])[0], {})
+
+
+def srcset_for(key):
+    rows = _meta(key).get("srcset") or []
+    return ", ".join("/assets/img/%s %dw" % (f, w) for w, f in rows)
+
+
+SPLIT_SIZES = "(max-width:900px) 100vw, 50vw"
+CARD_SIZES = "(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px"
+BA_SIZES = "(max-width:1244px) 100vw, 1116px"
+
+
 def picture(key, cls="", sizes=None, eager=False, extra=""):
-    loading = 'loading="eager" fetchpriority="high"' if eager else 'loading="lazy"'
-    s = ' sizes="%s"' % sizes if sizes else ""
+    """An <img> with its real intrinsic size and a responsive srcset.
+
+    The width/height attributes must match the file, or the browser reserves
+    the wrong box and the page shifts as images land.
+    """
+    m = _meta(key)
+    w, h = m.get("w", 1200), m.get("h", 900)
+    loading = ('loading="eager" fetchpriority="high"' if eager
+               else 'loading="lazy"')
+    ss = srcset_for(key)
+    ss_attr = ' srcset="%s"' % ss if ss else ""
+    # A srcset without sizes makes the browser assume 100vw and over-download.
+    sz_attr = ' sizes="%s"' % (sizes or "100vw") if ss else ""
     c = ' class="%s"' % cls if cls else ""
-    return ('<img src="%s" alt="%s"%s width="1200" height="900" %s decoding="async"%s%s>'
-            % (img(key), html.escape(IMG_ALT[key]), c, loading, s, extra))
+    return ('<img src="%s"%s%s alt="%s"%s width="%d" height="%d" %s decoding="async"%s>'
+            % (img(key), ss_attr, sz_attr, html.escape(IMG_ALT[key]), c, w, h,
+               loading, extra))
 
 
 # ------------------------------------------------------------------- services
@@ -231,9 +272,15 @@ def head(page):
     """<head> for one page."""
     url = SITE + page["path"]
     og_img = SITE + img("og")
-    depth_css = "/assets/css/site.css"
+    depth_css = "/assets/css/site.min.css"
     extra = page.get("head_extra", "")
     robots = page.get("robots", "index, follow, max-image-preview:large, max-snippet:-1")
+    lcp = page.get("lcp")
+    lcp_preload = ""
+    if lcp:
+        ss = srcset_for(lcp)
+        lcp_preload = ('<link rel="preload" as="image" href="%s"%s imagesizes="100vw" fetchpriority="high">\n'
+                       % (img(lcp), ' imagesrcset="%s"' % ss if ss else ""))
     return f"""<!DOCTYPE html>
 <html lang="en-AU">
 <head>
@@ -263,11 +310,14 @@ def head(page):
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="{FONT_HREF}">
+<link rel="stylesheet" href="{FONT_HREF}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{FONT_HREF}"></noscript>
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="stylesheet" href="{depth_css}">
+{lcp_preload}
 
 {GHL_TRACKING}{extra}</head>
 <body>
@@ -297,7 +347,7 @@ def site_header(active, solid=False, modal_cta=True):
     return f"""<header class="site-header{' solid' if solid else ''}" id="top">
   <div class="nav-inner">
     <a href="/" class="brand" aria-label="Greenline Services home">
-      <span class="brand-mark"><img src="/assets/img/logo-mark.png" alt="Greenline Services logo" width="512" height="512" decoding="async"></span>
+      <span class="brand-mark"><img src="/assets/img/logo-mark-120.png" alt="Greenline Services logo" width="120" height="120" decoding="async"></span>
       <span class="brand-name">Greenline Services</span>
     </a>
 
@@ -411,7 +461,7 @@ def site_footer(with_modal=True):
     <div class="f-grid">
       <div class="f-about">
         <a href="/" class="brand">
-          <span class="brand-mark"><img src="/assets/img/logo-mark.png" alt="Greenline Services logo" width="512" height="512" loading="lazy" decoding="async"></span>
+          <span class="brand-mark"><img src="/assets/img/logo-mark-120.png" alt="Greenline Services logo" width="120" height="120" loading="lazy" decoding="async"></span>
           <span class="brand-name">Greenline Services</span>
         </a>
         <p>Lawn, garden and property maintenance for Frankston and the Mornington Peninsula. Locally owned and run by {BIZ['owner']}.</p>
@@ -561,7 +611,7 @@ def service_cards(exclude=None, limit=None):
     out = []
     for s in items:
         out.append(f"""<a class="svc" href="/services/{s['slug']}/">
-        <span class="svc-photo">{picture(s['img'])}</span>
+        <span class="svc-photo">{picture(s['img'], sizes='(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px')}</span>
         <span class="svc-body">
           <span class="svc-icon" aria-hidden="true"><svg viewBox="0 0 24 24">{s['icon']}</svg></span>
           <h3>{s['card_title']}</h3>
@@ -607,8 +657,8 @@ def before_after_slider():
         slides.append(f"""<div class="ba-slide" role="group" aria-roledescription="slide" aria-label="{i+1} of {len(BEFORE_AFTER)}: {title}">
         <div class="ba" style="--pos:50%">
           <div class="ba-frame">
-            {picture(key + '-after', cls='ba-img')}
-            <div class="ba-clip">{picture(key + '-before', cls='ba-img')}</div>
+            {picture(key + '-after', cls='ba-img', sizes=BA_SIZES)}
+            <div class="ba-clip">{picture(key + '-before', cls='ba-img', sizes=BA_SIZES)}</div>
             <span class="ba-tag ba-tag-before" aria-hidden="true">Before</span>
             <span class="ba-tag ba-tag-after" aria-hidden="true">After</span>
             <span class="ba-divider" aria-hidden="true"><span class="ba-knob">{svg('arrows')}</span></span>
@@ -641,7 +691,7 @@ def work_gallery():
     out = []
     for key, title, text in WORK:
         out.append('<figure class="work">%s<figcaption><b>%s</b>%s</figcaption></figure>'
-                   % (picture(key), title, text))
+                   % (picture(key, sizes=CARD_SIZES), title, text))
     return '<div class="work-grid">%s</div>' % "".join(out)
 
 
@@ -822,7 +872,7 @@ HOME_TRAIL = [("Home", "/")]
 
 def page_home():
     return f"""{crumbs([]) if False else ''}<section class="hero">
-  <div class="hero-media" aria-hidden="true">{picture('hero', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('hero', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     <span class="eyebrow">Frankston &amp; the Mornington Peninsula</span>
     <h1>Lawn Mowing &amp; Garden Maintenance in <em>Frankston</em></h1>
@@ -882,7 +932,7 @@ def page_home():
           <p><strong>Not sure what you need?</strong> Call {BIZ['phone_display']} and describe the property. We will tell you what the job actually needs &mdash; and if it is not something we do, we will say so rather than quote you for it.</p>
         </div>
       </div>
-      <div class="split-media">{picture('lawn-mowing')}</div>
+      <div class="split-media">{picture('lawn-mowing', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1012,7 +1062,7 @@ def page_service(sp):
         % (p[0], p[1], "".join("<li>%s</li>" % li for li in p[2]))
         for p in sp["panels"])
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture(s['img'], eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture(s['img'], eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">{sp['eyebrow']}</span>
@@ -1427,7 +1477,7 @@ HUB_FAQS = [
 def page_services():
     trail = [("Home", "/"), ("Services", None)]
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture('work-garden', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('work-garden', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">All services</span>
@@ -1476,7 +1526,7 @@ def page_services():
           <p><strong>Managing more than one property?</strong> Send the addresses and how often each needs attention and we will price the lot together.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-hedge')}</div>
+      <div class="split-media">{picture('work-hedge', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1524,7 +1574,7 @@ ABOUT_FAQS = [
 def page_about():
     trail = [("Home", "/"), ("About", None)]
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture('about-dave', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('about-dave', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">About us</span>
@@ -1563,7 +1613,7 @@ def page_about():
         <p>Fixed quotes, given free after we have seen the property. Not an hourly rate. An hourly rate rewards working slowly and leaves you watching the clock from the kitchen window, which is a strange way to run a relationship with someone who is at your house every fortnight.</p>
         <p>If a job turns out to be bigger than it looked, we tell you before we start rather than after we finish. And if what you actually need is not something we do, we say so &mdash; you are better off with the right trade than with us having a go at it.</p>
       </div>
-      <div class="split-media tall">{picture('garden-maintenance')}</div>
+      <div class="split-media tall">{picture('garden-maintenance', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1653,7 +1703,7 @@ CONTACT_FAQS = [
 def page_contact():
     trail = [("Home", "/"), ("Contact", None)]
     return f"""<section class="page-hero hero-form">
-  <div class="hero-media" aria-hidden="true">{picture('work-lawn', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('work-lawn', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     <div class="hero-split">
       <div class="hero-copy">
@@ -1742,7 +1792,7 @@ def build_pages():
         "active": "home",
         "title": "Lawn Mowing Frankston | Garden Care | Greenline Services",
         "desc": "Lawn mowing in Frankston from Greenline Services. Local lawn care, garden maintenance, hedge trimming and gutter cleaning across the Mornington Peninsula.",
-        "body": page_home(),
+        "body": page_home(), "lcp": "hero",
         "schema": [local_business_schema(), website_schema(),
                    faq_schema(HOME_FAQS), breadcrumb_schema([("Home", "/")])],
         "priority": "1.0",
@@ -1755,7 +1805,7 @@ def build_pages():
         "active": "services",
         "title": "Lawn Mowing Services Frankston | All Services | Greenline",
         "desc": "All Greenline Services lawn mowing services in Frankston: mowing, gutter cleaning, garden maintenance, hedge trimming, rubbish removal and garden clean-ups.",
-        "body": page_services(),
+        "body": page_services(), "lcp": "work-garden",
         "schema": [faq_schema(HUB_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Services", "/services/")])],
         "priority": "0.9",
@@ -1770,7 +1820,7 @@ def build_pages():
             "active": "services",
             "title": sp["title"],
             "desc": sp["desc"],
-            "body": page_service(sp),
+            "body": page_service(sp), "lcp": sp["slug"],
             "schema": [
                 service_schema(strip_tags(sp["h1"]), sp["desc"], path,
                                strip_tags(sp["crumb"])),
@@ -1788,7 +1838,7 @@ def build_pages():
         "active": "about",
         "title": "About Greenline Services | Lawn &amp; Garden Care Frankston",
         "desc": "Greenline Services is a Frankston lawn and garden business run by Dave Coelho. Same crew every visit, fixed quotes, all waste taken away. Serving 18 suburbs.",
-        "body": page_about(),
+        "body": page_about(), "lcp": "about-dave",
         "schema": [faq_schema(ABOUT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("About", "/about/")]),
                    about_page_schema()],
@@ -1802,7 +1852,7 @@ def build_pages():
         "active": "contact",
         "title": "Contact Greenline Services | Free Quote Frankston VIC",
         "desc": "Contact Greenline Services in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0494 154 184 or send the quote form.",
-        "body": page_contact(), "modal": False,
+        "body": page_contact(), "modal": False, "lcp": "work-lawn",
         "schema": [faq_schema(CONTACT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Contact", "/contact/")]),
                    contact_page_schema()],
@@ -1871,7 +1921,7 @@ def page_thanks():
           <p><strong>In a hurry?</strong> If you have an inspection date, a photography booking or a storm on the way, call {BIZ['phone_display']} rather than waiting on the email. We prioritise jobs with a hard deadline.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-hedge')}</div>
+      <div class="split-media">{picture('work-hedge', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1977,6 +2027,30 @@ NOT_FOUND_BODY = """<section class="page-hero">
 </main>""" % service_cards()
 
 
+def minify_css(css):
+    """Conservative CSS minification.
+
+    Deliberately leaves spaces around + and - alone: this stylesheet uses
+    calc(100% - var(--pos)) and calc(var(--header-h) + 24px), and stripping
+    those spaces silently breaks both.
+    """
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)      # comments
+    css = re.sub(r"\s+", " ", css)                        # collapse whitespace
+    css = re.sub(r"\s*([{};,])\s*", r"\1", css)           # around delimiters
+    css = re.sub(r";\}", "}", css)                        # trailing semicolons
+    css = re.sub(r"\s*:\s*", ":", css)                    # after property names
+    return css.strip()
+
+
+def build_css():
+    src = os.path.join(ROOT, "assets", "css", "site.css")
+    with open(src, encoding="utf-8") as fh:
+        raw = fh.read()
+    out = minify_css(raw)
+    write("assets/css/site.min.css", out)
+    return len(raw), len(out)
+
+
 def write(rel_path, content):
     full = os.path.join(ROOT, rel_path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
@@ -1986,6 +2060,8 @@ def write(rel_path, content):
 
 
 def main():
+    raw, mini = build_css()
+    print("css %d -> %d bytes (%d%% smaller)" % (raw, mini, 100 - mini * 100 // raw))
     pages = build_pages()
     written = []
     for p in pages:
