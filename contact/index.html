@@ -159,8 +159,12 @@
         <input type="text" id="qf-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
       </div>
       <div class="field full">
+        <label for="qf-property_size">Property size</label>
+        <select id="qf-property_size" name="property_size"><option value="">Select a size</option><option>Small &mdash; under 300m&sup2;</option><option>Medium &mdash; 300&ndash;600m&sup2;</option><option>Large &mdash; 600&ndash;1000m&sup2;</option><option>Acreage &mdash; over 1000m&sup2;</option><option>Not sure</option></select>
+      </div>
+      <div class="field full">
         <label for="qf-job_notes">Job notes</label>
-        <textarea id="qf-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
+        <textarea id="qf-job_notes" name="job_notes" placeholder="How long since it was last done, access notes, anything else we should know&hellip;"></textarea>
       </div>
       <div class="field full" style="margin-bottom:0">
         <button type="submit" class="btn-submit">Send my quote request</button>

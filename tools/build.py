@@ -539,11 +539,20 @@ def quote_form(preselect=None, heading=None, idp="qf", card=True):
         phone            -> {{contact.phone}}
         property_address -> {{contact.property_address}}
         service_needed   -> {{contact.service_needed}}
+        property_size    -> {{contact.property_size}}
         job_notes        -> {{contact.job_notes}}
 
     Submits natively (no preventDefault anywhere) so the GHL tracking script
     can read the submission. Do not add a JS handler that blocks submit.
     """
+    sizes = ["Small &mdash; under 300m&sup2;",
+             "Medium &mdash; 300&ndash;600m&sup2;",
+             "Large &mdash; 600&ndash;1000m&sup2;",
+             "Acreage &mdash; over 1000m&sup2;",
+             "Not sure"]
+    size_opts = '<option value="">Select a size</option>' + "".join(
+        "<option>%s</option>" % x for x in sizes)
+
     opts = []
     labels = ["Lawn mowing", "Gutter cleaning", "Garden maintenance",
               "Hedge trimming &amp; edging", "Green waste &amp; rubbish removal",
@@ -587,8 +596,12 @@ def quote_form(preselect=None, heading=None, idp="qf", card=True):
         <input type="text" id="{idp}-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
       </div>
       <div class="field full">
+        <label for="{idp}-property_size">Property size</label>
+        <select id="{idp}-property_size" name="property_size">{size_opts}</select>
+      </div>
+      <div class="field full">
         <label for="{idp}-job_notes">Job notes</label>
-        <textarea id="{idp}-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
+        <textarea id="{idp}-job_notes" name="job_notes" placeholder="How long since it was last done, access notes, anything else we should know&hellip;"></textarea>
       </div>
       <div class="field full" style="margin-bottom:0">
         <button type="submit" class="btn-submit">Send my quote request</button>

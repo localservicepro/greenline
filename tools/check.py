@@ -24,7 +24,7 @@ VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link',
 
 # name -> CRM field, per the GHL mapping
 GHL_FIELDS = {"full_name", "email", "phone",
-              "property_address", "service_needed", "job_notes"}
+              "property_address", "property_size", "service_needed", "job_notes"}
 GHL_TRACKING_ID = "tk_9f5144f196b340e59b8396dd9921dc07"
 
 # page -> the one keyword it is built to rank for

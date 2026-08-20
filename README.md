@@ -75,12 +75,16 @@ fields:
 | Email | `email` | `{{contact.email}}` |
 | Phone | `phone` | `{{contact.phone}}` |
 | Property address | `property_address` | `{{contact.property_address}}` |
+| Property size | `property_size` | `{{contact.property_size}}` |
 | Services needed | `service_needed` | `{{contact.service_needed}}` |
 | Job notes | `job_notes` | `{{contact.job_notes}}` |
 
-`property_address`, `service_needed` and `job_notes` are custom fields — create
-them in **Settings → Custom Fields** in GHL before the first submission, or
-those three values will be dropped while name, email and phone still land.
+`property_address`, `property_size`, `service_needed` and `job_notes` are custom
+fields — create them in **Settings → Custom Fields** in GHL before the first
+submission, or those four values are dropped while name, email and phone still
+land. Create `property_size` as a **Text** field: it is a dropdown on the site,
+and a GHL dropdown would reject any label that does not match its options
+character for character.
 
 The GHL tracking script is in the `<head>` of every page. In GHL, enable
 **Form Analytics** and **Form Submissions** in Settings or nothing is recorded.
