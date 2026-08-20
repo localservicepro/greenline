@@ -182,30 +182,38 @@ legible against both the transparent-over-hero and the scrolled-light header.
 
 ## Images
 
-All photography is the client's own job photos, supplied via Google Drive, resized
-and compressed here (~3.9 MB total for 12 images). Nothing is stock or generated.
+All photography is the client's own job photos, from the `Compressed` folder in
+their Google Drive, resized and compressed here (~4.9 MB for 12 images).
+Nothing is stock or generated.
 
-Alt text lives in `IMG_ALT` in `tools/build.py` and describes what is actually in
-each frame.
+Every image is matched to the service it sits on:
 
-**Gaps in the photo set.** The supplied photos are heavily weighted to hedge
-trimming. There are no photos of:
+| Slot | Photo | What it shows |
+|---|---|---|
+| Homepage hero | `20260727_153633` | mown back lawn, stepping stones, clipped beds |
+| Lawn mowing | `20260720_123526` | front lawn mown and edged to the footpath |
+| Gutter cleaning | `20260326_093749` | gutter packed with gum leaves, before the clean |
+| Garden maintenance | `20260615_145352` | bed remulched and re-edged beside a mown lawn |
+| Hedge trimming | `20260617_110253` | large hedge cut square and level |
+| Rubbish removal | `20260623_092725` | yard cleared back to bare ground, waste gone |
+| Garden clean-ups | `20260526_113940` | overgrown yard with debris, before the clean-up |
+| About | `20260724_150649` | finished front garden, clipped shrubs, swept path |
+| Work gallery | `20260311_145636`, `20260528_110901`, `20260730_152328` | mown lawn, pool-surround topiary, maintained back garden |
 
-- lawn mowing in progress (no mower, no striped lawn)
-- a loaded trailer or green-waste removal
-- an end-of-lease before/after
-- Dave, or the crew, or a branded vehicle
+Service images render at 1600px because they double as page-hero backgrounds;
+gallery images at 1200px. Nothing is upscaled beyond its source.
 
-Those slots currently use the closest honest match from the set — a mown lawn for
-the lawn mowing page, a trimmed hedge with bins at the kerb for rubbish removal, a
-cleared driveway for clean-ups, a ladder against a hedge for the About page. The
-alt text does not claim more than each photo shows. Better photos for those four
-would lift the pages noticeably.
+Alt text lives in `IMG_ALT` in `tools/build.py` and describes what is actually
+in each frame.
 
-The only gutter photo is a "before" shot — grass growing out of a blocked gutter.
-It works as a problem/solution image but a finished-gutter shot would be stronger.
+**Still missing from the photo set:** no shot of mowing in progress (a mower in
+frame), no loaded trailer or green waste being carted, and no photo of Dave, the
+crew or a branded vehicle. The rubbish removal page therefore uses a cleared-yard
+result rather than a removal in progress, and the About page uses a finished
+property rather than a portrait. A mower-in-action shot, a loaded-trailer shot and
+a portrait would be the three highest-value additions.
 
-## SEO / GEO / AEO implementation## SEO / GEO / AEO implementation
+## SEO / GEO / AEO implementation## SEO / GEO / AEO implementation## SEO / GEO / AEO implementation
 
 **On-page**
 - One `<h1>` per page, containing the target keyword

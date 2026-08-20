@@ -92,7 +92,7 @@ IMG_FILES = {
     "rubbish-removal":    "rubbish-removal.jpg",
     "garden-clean-ups":   "garden-clean-ups.jpg",
     "about-dave":         "about-dave.jpg",
-    "work-weeding":       "work-weeding.jpg",
+    "work-lawn":          "work-lawn.jpg",
     "work-hedge":         "work-hedge.jpg",
     "work-garden":        "work-garden.jpg",
     "og":                 "og.jpg",
@@ -101,17 +101,17 @@ IMG_FILES = {
 # Alt text describes what is actually in each frame — keyword-relevant, but
 # never claiming more than the photo shows.
 IMG_ALT = {
-    "hero": "Front garden in Frankston maintained by Greenline Services, with a mown lawn, clipped shrubs and a swept gravel drive",
-    "lawn-mowing": "Mown and edged back lawn beside a freshly trimmed hedge on a Mornington Peninsula property",
-    "gutter-cleaning": "Blocked gutter on a Frankston home with grass growing out of it, before a Greenline Services gutter clean",
-    "garden-maintenance": "Tidied garden bed with pebble mulch and shaped native shrubs during a regular garden maintenance visit in Frankston",
-    "hedge-trimming": "Long hedge cut square and level in Frankston, with the hedge trimmer resting on the mown lawn",
-    "rubbish-removal": "Trimmed hedge and cleared green waste at a Frankston property, with bins out at the kerb",
-    "garden-clean-ups": "Driveway and garden cleared and blown down after a property clean-up in Frankston",
-    "about-dave": "Greenline Services ladder set against a long hedge mid-trim on a Frankston job",
-    "work-weeding": "Close-up of weed control being applied through turf during a Greenline Services garden maintenance visit",
-    "work-hedge": "Tall hedge shaped square on all faces beside a Frankston driveway",
-    "work-garden": "Trimmed hedges, mown lawn and a swept driveway after a Greenline Services visit",
+    "hero": "Freshly mown back lawn with stepping stones and clipped garden beds at a Frankston home maintained by Greenline Services",
+    "lawn-mowing": "Front lawn mown and edged along the footpath and driveway on a Mornington Peninsula property",
+    "gutter-cleaning": "Roof gutter in Frankston packed with gum leaves and bark before a Greenline Services gutter clean",
+    "garden-maintenance": "Garden bed remulched and re-edged beside a mown lawn during a regular garden maintenance visit in Frankston",
+    "hedge-trimming": "Large hedge cut square and level on every face after hedge trimming in Frankston",
+    "rubbish-removal": "Backyard cleared back to bare ground in Frankston, with all green waste and rubbish taken away",
+    "garden-clean-ups": "Overgrown Frankston backyard with knee-high grass and debris, before an end-of-lease garden clean up",
+    "about-dave": "Tidy front garden in Frankston with clipped shrubs, a swept aggregate path and a mown lawn",
+    "work-lawn": "Sloping back lawn mown and edged with the garden beds cut clean around it",
+    "work-hedge": "Shaped topiary hedging along a pool surround, cut square and level",
+    "work-garden": "Maintained back garden with a mown lawn, edged beds and the paths blown clean",
     "og": "Greenline Services — lawn mowing, hedge trimming and garden maintenance in Frankston and the Mornington Peninsula",
 }
 
@@ -562,12 +562,12 @@ def service_cards(exclude=None, limit=None):
 # Captions describe the job in the frame. No suburb is named unless it is known,
 # so nothing here invents a location for a real client's property.
 WORK = [
-    ("work-hedge", "Hedge shaped square",
-     "A tall screening hedge cut level on every face and the clippings taken away the same day."),
-    ("work-weeding", "Weed control through turf",
-     "Spot-treating weeds through the lawn on a regular maintenance round, before they seed and spread."),
-    ("work-garden", "Trimmed, mown and blown down",
-     "Hedges cut, lawn mown and edged, and the driveway blown clean before we left the property."),
+    ("work-lawn", "Mown, caught and edged",
+     "A regular round: the lawn cut and caught, then every edge along the paths and beds cut clean."),
+    ("work-hedge", "Hedges shaped square",
+     "Pool-surround hedging cut level on every face, with the clippings taken away the same day."),
+    ("work-garden", "The whole property kept tidy",
+     "Lawn mown, beds edged and mulched, and the paths blown down before we left."),
 ]
 
 
@@ -1591,7 +1591,7 @@ CONTACT_FAQS = [
 def page_contact():
     trail = [("Home", "/"), ("Contact", None)]
     return f"""<section class="page-hero hero-form">
-  <div class="hero-media" aria-hidden="true">{picture('work-garden', eager=True)}</div>
+  <div class="hero-media" aria-hidden="true">{picture('work-lawn', eager=True)}</div>
   <div class="hero-in">
     <div class="hero-split">
       <div class="hero-copy">
@@ -1811,7 +1811,7 @@ def page_thanks():
           <p><strong>In a hurry?</strong> If you have an inspection date, a photography booking or a storm on the way, call {BIZ['phone_display']} rather than waiting on the email. We prioritise jobs with a hard deadline.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-garden')}</div>
+      <div class="split-media">{picture('work-hedge')}</div>
     </div>
   </div>
 </section>
