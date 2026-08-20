@@ -301,6 +301,41 @@ a portrait would be the three highest-value additions.
 - [ ] Add the website URL to the Google Business Profile
 - [ ] Test the rendered schema in Google's Rich Results Test
 
+## Accessibility
+
+Audited with axe-core (WCAG 2.0/2.1/2.2 A + AA plus best practice) at 412px and
+1350px on every page. **0 violating nodes.** Re-run with:
+
+```bash
+node a11y.js            # see tools/ notes; axe-core against the local server
+```
+
+Issues found and fixed after the PageSpeed "agentic browsing" report:
+
+| Audit | Cause | Fix |
+|---|---|---|
+| `aria-prohibited-attr` | `<div class="stars" aria-label="…">` — a bare div has no role, so it cannot carry `aria-label` | added `role="img"` |
+| `aria-required-children` | carousel dots wrapped in `role="tablist"`, which requires `role="tab"` children | they are not tabs — swapped to `role="group"` |
+| `target-size` | the slider dots were 9px buttons | button is now a 24px target with the 9px dot drawn inside it |
+| `color-contrast` | footer legal line at `rgba(255,255,255,.45)` on `#0C2A12` (~3.4:1) | raised to `.66` |
+| `heading-order` | footer columns were `<h4>` straight after an `<h2>`; the quote card was `<h3>` straight after the `<h1>` on Contact | both promoted to `<h2>` with the styling kept |
+| `region` | the hero, trust bar and CTA band sat outside any landmark, because each page opened `<main>` partway down | `render()` now wraps the whole body in one `<main id="main">` |
+
+## Testimonials
+
+The four testimonials are **real reviews from the Google Business Profile**,
+quoted verbatim, attributed by name and labelled "Google review", with a link
+to the profile. They replaced placeholder text that was written during the
+build.
+
+Do not add invented testimonials. Fabricated reviews breach Australian Consumer
+Law and the ACCC targets them specifically. `TESTIMONIALS` in `tools/build.py`
+carries a comment saying so.
+
+No `Review` or `AggregateRating` schema is attached, deliberately. Google treats
+self-serving review markup on a business's own site as ineligible for rich
+results, and marking it up can attract a manual action.
+
 ## Performance
 
 Mobile-first, measured rather than guessed. What a 412px phone downloads:

@@ -256,7 +256,8 @@ IC = {
     "chev-right": '<path d="m9 5 7 7-7 7"/>',
 }
 STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1Z"/></svg>'
-STARS = '<div class="stars" aria-label="5 out of 5 stars">%s</div>' % (STAR * 5)
+STARS = ('<div class="stars" role="img" aria-label="Rated 5 out of 5">%s</div>'
+         % (STAR * 5))
 
 
 def svg(name, cls="", size=None):
@@ -467,15 +468,15 @@ def site_footer(with_modal=True):
         <p>Lawn, garden and property maintenance for Frankston and the Mornington Peninsula. Locally owned and run by {BIZ['owner']}.</p>
       </div>
       <div>
-        <h4>Services</h4>
+        <h2 class="f-head">Services</h2>
         <ul>{svc_links}</ul>
       </div>
       <div>
-        <h4>Areas served</h4>
+        <h2 class="f-head">Areas served</h2>
         <ul>{area_links}</ul>
       </div>
       <div>
-        <h4>Contact</h4>
+        <h2 class="f-head">Contact</h2>
         <ul>
           <li><a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a></li>
           <li><a href="mailto:{BIZ['email']}">{BIZ['email']}</a></li>
@@ -569,7 +570,9 @@ def quote_form(preselect=None, heading=None, idp="qf", card=True):
     for k, v in FORM_HIDDEN.items():
         hidden += '<input type="hidden" name="%s" value="%s">\n    ' % (k, v)
 
-    head_html = '<h3 style="margin-bottom:18px">%s</h3>' % heading if heading else ""
+    # h2, not h3: on the contact page this is the first heading after the h1,
+    # and jumping h1 -> h3 fails the heading-order audit.
+    head_html = '<h2 class="form-head">%s</h2>' % heading if heading else ""
     open_card = '<div class="contact-card">' if card else ""
     close_card = "</div>" if card else ""
     return f"""{open_card}
@@ -694,7 +697,7 @@ def before_after_slider():
       </div>
       <div class="ba-nav">
         <button type="button" class="ba-arrow" data-ba-prev aria-label="Previous job">{svg('chev-left')}</button>
-        <div class="ba-dots" role="tablist" aria-label="Choose a job">{dots}</div>
+        <div class="ba-dots" role="group" aria-label="Choose a job">{dots}</div>
         <button type="button" class="ba-arrow" data-ba-next aria-label="Next job">{svg('chev-right')}</button>
       </div>
     </div>"""
@@ -708,23 +711,30 @@ def work_gallery():
     return '<div class="work-grid">%s</div>' % "".join(out)
 
 
+# Real reviews from the Greenline Services Google Business Profile, quoted
+# verbatim. Do not edit the wording, and do not add invented ones — fabricated
+# testimonials are a breach of Australian Consumer Law.
 TESTIMONIALS = [
-    ("Dave has been doing our lawns fortnightly for over a year. Same bloke every time, always turns up when he says, and the edges are always sharp. Never had to chase him once.",
-     "Rebecca M.", "Frankston South"),
-    ("Booked an end-of-lease clean-up with three days&rsquo; notice. The yard was a jungle and they had it back to inspection standard in a day. We got the full bond back.",
-     "Josh T.", "Carrum Downs"),
-    ("Gutters were overflowing every time it rained. Greenline cleared both sides and the downpipes, showed me photos of the before and after, and took all the mess with them.",
-     "Angela P.", "Mount Eliza"),
+    ("Dave did a fantastic job on our overgrown front yard. He got it looking great in just a few hours and saved me a full day&rsquo;s work. Friendly, professional, and easy to deal with. Highly recommend. Thanks mate!",
+     "Stefan Nel"),
+    ("Dave is brilliant. Fun, friendly and an incredible worker. Always punctual and gives that little bit extra. Had gutters cleaned for the first time in years, thrilled with the result. And third time he has edged and mowed the lawns. Great bloke, great ethics, you won&rsquo;t be disappointed. 11/10",
+     "Trudi Maulday"),
+    ("Yesterday was the second time I have used Dave to do my garden, and I&rsquo;m happy to say that both times he has done a great job. Happy to recommend him, he was punctual, efficient and friendly. He left my garden looking fab, and cleaned up all the mess.",
+     "Claudine Barry"),
+    ("Dave took it on board to clear out my aunty&rsquo;s property at short notice. He was thorough, prompt and did an amazing job. Would highly recommend his services.",
+     "Alicia"),
 ]
+
+GOOGLE_REVIEWS_URL = "https://www.google.com/maps/place/Greenline+services"
 
 
 def testimonials():
     out = []
-    for text, name, suburb in TESTIMONIALS:
+    for text, name in TESTIMONIALS:
         out.append(f"""<figure class="quote">
         {STARS}
-        <p>&ldquo;{text}&rdquo;</p>
-        <cite>{name}<span>{suburb}</span></cite>
+        <blockquote>&ldquo;{text}&rdquo;</blockquote>
+        <figcaption><cite>{name}</cite><span>Google review</span></figcaption>
       </figure>""")
     return '<div class="quotes">%s</div>' % "".join(out)
 
@@ -1017,6 +1027,7 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">What clients say</span>
       <h2>Booked again, and again</h2>
+      <p class="lede">Reviews left on our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google Business Profile</a>, quoted word for word.</p>
     </div>
     {testimonials()}
   </div>
@@ -1663,6 +1674,7 @@ def page_about():
     <div class="sec-head">
       <span class="eyebrow">What clients say</span>
       <h2>The reason the round keeps growing</h2>
+      <p class="lede">Straight from our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google reviews</a>.</p>
     </div>
     {testimonials()}
   </div>
@@ -1975,9 +1987,13 @@ BANNER = ("<!-- Generated by tools/build.py — edit the content there, not here
 
 def render(page):
     has_modal = page.get("modal", True)
+    # Every page used to open <main> partway down, leaving the hero, trust bar
+    # and CTA band outside any landmark. Wrap the whole body once instead.
+    body = page["body"].replace('<main id="main">', "").replace("</main>", "")
+    body = '<main id="main">\n' + body + "\n</main>\n"
     out = [head(page), BANNER,
            site_header(page["active"], solid=page["path"] != "/", modal_cta=has_modal),
-           page["body"], site_footer(with_modal=has_modal)]
+           body, site_footer(with_modal=has_modal)]
     doc = "".join(out)
     # schema goes just before </body>
     schema = "".join(jsonld(s) for s in page["schema"])
