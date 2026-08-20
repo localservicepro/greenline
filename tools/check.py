@@ -27,6 +27,10 @@ GHL_FIELDS = {"full_name", "email", "phone",
               "property_address", "property_size", "service_needed", "job_notes"}
 GHL_TRACKING_ID = "tk_9f5144f196b340e59b8396dd9921dc07"
 
+# The client does not want the street address on the pages. It belongs in the
+# LocalBusiness JSON-LD only, where it is machine-readable without being shown.
+STREET = "St Johns Ave"
+
 # page -> the one keyword it is built to rank for
 TARGETS = {
     'index.html': 'lawn mowing frankston',
@@ -165,6 +169,29 @@ def check_one_form(f, form):
         fail(f, 'form is iframe-based, which GHL does not support')
 
 
+def check_address(f):
+    """The street address must appear in JSON-LD and nowhere else.
+
+    Visible copy shows suburb, state and postcode only. Putting it back into
+    rendered text (or hiding it with CSS to feed crawlers, which is cloaking)
+    both fail here.
+    """
+    s = open(f, encoding='utf-8').read()
+
+    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', s, re.S)
+    in_schema = any(STREET in b for b in blocks)
+
+    stripped = re.sub(r'<script[^>]*>.*?</script>', ' ', s, flags=re.S)
+    stripped = re.sub(r'<style[^>]*>.*?</style>', ' ', stripped, flags=re.S)
+    if STREET in stripped:
+        fail(f, 'street address appears in visible markup — it belongs in JSON-LD only')
+
+    # JSON-LD is now the only carrier for the address, so the pages a crawler
+    # looks to for NAP must each define the business entity in full.
+    if f in ('index.html', 'about/index.html', 'contact/index.html') and not in_schema:
+        fail(f, 'street address missing from the LocalBusiness JSON-LD')
+
+
 def check_js():
     js = open('assets/js/site.js', encoding='utf-8').read()
     # A submit handler that preventDefaults would silently stop every lead.
@@ -234,6 +261,7 @@ def main():
     for f in files:
         check_page(f)
         check_form(f)
+        check_address(f)
     check_js()
     check_density()
     check_links(files)

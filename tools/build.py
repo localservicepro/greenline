@@ -26,7 +26,13 @@ FONT_HREF = ("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144
              "&family=Karla:wght@400;500;600;700&display=swap")
 BIZ = {
     "name": "Greenline Services",
+    # The street address is deliberately NOT shown anywhere on the pages. It
+    # lives only in the LocalBusiness JSON-LD below, which is the legitimate
+    # machine-readable channel — hiding text in the markup to feed crawlers
+    # would be cloaking. tools/check.py fails the build if it leaks into any
+    # visible copy.
     "street": "2/15 St Johns Ave",
+    "public_address": "Frankston VIC 3199",
     "locality": "Frankston",
     "region": "VIC",
     "postcode": "3199",
@@ -480,7 +486,7 @@ def site_footer(with_modal=True):
         <ul>
           <li><a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a></li>
           <li><a href="mailto:{BIZ['email']}">{BIZ['email']}</a></li>
-          <li>{BIZ['street']}<br>{BIZ['locality']} {BIZ['region']} {BIZ['postcode']}</li>
+          <li>{BIZ['public_address']}</li>
           <li><a href="/contact/">Request a free quote</a></li>
           <li><a href="/about/">About Greenline</a></li>
         </ul>
@@ -518,7 +524,7 @@ def nap_list():
   </li>
   <li>
     <span class="ico" aria-hidden="true">{svg('pin')}</span>
-    <span><b>Address</b>{BIZ['street']}<br>{BIZ['locality']} {BIZ['region']} {BIZ['postcode']}</span>
+    <span><b>Based in</b>{BIZ['public_address']}<br>Mobile service &mdash; we come to you</span>
   </li>
   <li>
     <span class="ico" aria-hidden="true">{svg('clock')}</span>
@@ -899,7 +905,7 @@ def page_home():
   <div class="hero-in">
     <span class="eyebrow">Frankston &amp; the Mornington Peninsula</span>
     <h1>Lawn Mowing &amp; Garden Maintenance in <em>Frankston</em></h1>
-    <p class="hero-sub">Greenline Services is a local lawn and garden crew based on St Johns Ave. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
+    <p class="hero-sub">Greenline Services is a local lawn and garden crew based in Frankston. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
     <div class="hero-cta">
       <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
@@ -948,7 +954,7 @@ def page_home():
       <div class="prose">
         <span class="eyebrow">Local lawn care</span>
         <h2>Straight answers, a fixed price, and the same person each time</h2>
-        <p><strong>Greenline Services provides lawn mowing in Frankston, Victoria, along with garden maintenance, hedge trimming, gutter cleaning and green waste removal, from a base at 2/15 St Johns Ave, Frankston VIC 3199.</strong> We cover 18 suburbs across the Frankston City area and the Mornington Peninsula, on both one-off visits and regular weekly, fortnightly or monthly rounds.</p>
+        <p><strong>Greenline Services provides lawn mowing in Frankston, Victoria, along with garden maintenance, hedge trimming, gutter cleaning and green waste removal, from a base in Frankston VIC 3199.</strong> We cover 18 suburbs across the Frankston City area and the Mornington Peninsula, on both one-off visits and regular weekly, fortnightly or monthly rounds.</p>
         <p>Most people calling about lawn mowing in Frankston have one of two problems. Either the lawn has quietly got away from them over a wet fortnight, or they have been let down by someone who stopped turning up. Both are fixable. We quote the property before we start, we give you a day, and we keep to it.</p>
         <p>Every visit finishes the same way: lawn cut and caught, edges cut sharp along the paths and drives, paths blown clean, and the clippings on the trailer and gone. Nothing is left in a pile by the bin for you to sort out later.</p>
         <div class="callout">
@@ -1039,7 +1045,7 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">Where we work</span>
       <h2>Serving Frankston and the Mornington Peninsula</h2>
-      <p class="lede">We cover lawn mowing in Frankston and every other service on this page across 18 suburbs, working out of St Johns Ave. If yours is on the list, we can usually get to you within the week.</p>
+      <p class="lede">We cover lawn mowing in Frankston and every other service on this page across 18 suburbs, working out of Frankston. If yours is on the list, we can usually get to you within the week.</p>
     </div>
     {areas_grid()}
     {map_embed('Greenline Services service area map — Frankston VIC and the Mornington Peninsula')}
@@ -1584,7 +1590,7 @@ def page_services():
 # ================================================================== ABOUT
 ABOUT_FAQS = [
     ("Who is Greenline Services?",
-     "Greenline Services is a lawn, garden and property maintenance business based at 2/15 St Johns Ave, Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
+     "Greenline Services is a lawn, garden and property maintenance business based in Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
     ("Are you insured?",
      "Yes. Greenline Services carries public liability insurance, and we are happy to provide the certificate of currency to property managers, body corporates and commercial clients who need it on file before work starts."),
     ("Do you use subcontractors?",
@@ -1603,7 +1609,7 @@ def page_about():
     {crumbs(trail)}
     <span class="eyebrow">About us</span>
     <h1>About Greenline Services, Frankston</h1>
-    <p class="hero-sub">A local lawn and garden business run out of St Johns Ave by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
+    <p class="hero-sub">A local lawn and garden business run out of Frankston by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
     <div class="hero-cta">
       <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
@@ -1630,7 +1636,7 @@ def page_about():
       <div class="prose">
         <span class="eyebrow">Our story</span>
         <h2>One person, one trailer, and a round that kept growing</h2>
-        <p><strong>Greenline Services is a lawn, garden and property maintenance business operating from 2/15 St Johns Ave, Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
+        <p><strong>Greenline Services is a lawn, garden and property maintenance business operating from Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
         <p>The business grew the way these ones tend to: one property, then the neighbour, then their sister in Seaford. Nearly all of it came from people telling someone else that we turned up when we said we would. That is not a marketing line, it is just what happens in this trade when most operators do not.</p>
         <p>What has not changed as the round has grown is who does the work. There are no subcontractors and no rotating crews. The person who quotes your property is the person standing in it on the day, which is why nobody ever has to be told twice about the side gate, the dog, or the bed of natives that is not to be trimmed.</p>
         <h2>How we price</h2>
@@ -1687,11 +1693,11 @@ def page_about():
         <div class="sec-head" style="margin-bottom:26px">
           <span class="eyebrow">Find us</span>
           <h2>Based in Frankston</h2>
-          <p class="lede">We work out of St Johns Ave, Frankston, and cover 18 suburbs across the Frankston City area and the Mornington Peninsula.</p>
+          <p class="lede">We are based in Frankston and cover 18 suburbs across the Frankston City area and the Mornington Peninsula.</p>
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
+      <div>{map_embed('Map of the Greenline Services area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1769,7 +1775,7 @@ def page_contact():
       <div>
         <div class="sec-head" style="margin-bottom:26px">
           <span class="eyebrow">Our details</span>
-          <h2>2/15 St Johns Ave, Frankston VIC 3199</h2>
+          <h2>Based in Frankston VIC 3199</h2>
           <p class="lede">We are based in Frankston and work across the Frankston City suburbs and the Mornington Peninsula &mdash; from Seaford and Carrum Downs through to Mornington, Mount Martha and Tyabb.</p>
         </div>
         {nap_list()}
@@ -1777,7 +1783,7 @@ def page_contact():
           <p><strong>Got a deadline?</strong> End-of-lease inspections and pre-sale photography dates get priority. Tell us the date when you call and we will work backwards from it.</p>
         </div>
       </div>
-      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
+      <div>{map_embed('Map of the Greenline Services area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1864,7 +1870,8 @@ def build_pages():
         "title": "About Greenline Services | Lawn &amp; Garden Care Frankston",
         "desc": "Greenline Services is a Frankston lawn and garden business run by Dave Coelho. Same crew every visit, fixed quotes, all waste taken away. Serving 18 suburbs.",
         "body": page_about(), "lcp": "about-dave",
-        "schema": [faq_schema(ABOUT_FAQS),
+        "schema": [local_business_schema(),
+                   faq_schema(ABOUT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("About", "/about/")]),
                    about_page_schema()],
         "priority": "0.7",
@@ -1878,7 +1885,8 @@ def build_pages():
         "title": "Contact Greenline Services | Free Quote Frankston VIC",
         "desc": "Contact Greenline Services in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0494 154 184 or send the quote form.",
         "body": page_contact(), "modal": False, "lcp": "work-lawn",
-        "schema": [faq_schema(CONTACT_FAQS),
+        "schema": [local_business_schema(),
+                   faq_schema(CONTACT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Contact", "/contact/")]),
                    contact_page_schema()],
         "priority": "0.7",
@@ -1972,7 +1980,7 @@ def page_thanks():
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
+      <div>{map_embed('Map of the Greenline Services area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>

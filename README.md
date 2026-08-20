@@ -301,6 +301,40 @@ a portrait would be the three highest-value additions.
 - [ ] Add the website URL to the Google Business Profile
 - [ ] Test the rendered schema in Google's Rich Results Test
 
+## Address handling
+
+The client does not want the street address on the pages. Visitors see
+**Frankston VIC 3199** and "Mobile service — we come to you"; the street address
+appears in exactly one place:
+
+```
+index.html, about/, contact/  ->  LocalBusiness JSON-LD, PostalAddress.streetAddress
+```
+
+That is the legitimate way to do this. JSON-LD is machine-readable structured
+data that sits in the page source and is not rendered — it is what search engines
+read for NAP. Putting the address in hidden text (`display:none`, a
+`.visually-hidden` span, white-on-white) to feed crawlers while keeping it from
+visitors is **cloaking**, and it risks a manual action. Do not do it.
+
+Because JSON-LD is now the only carrier for the address, the three pages a
+crawler looks to for NAP — home, About and Contact — each define the full
+`LocalBusiness` entity rather than only referencing it by `@id`.
+
+`tools/check.py` enforces both sides of this and fails the build on either
+mistake:
+
+- the street address appearing anywhere in visible markup
+- the street address missing from the JSON-LD on home, About or Contact
+
+Both failure modes were tested by deliberately reintroducing them.
+
+One thing to be aware of: the embedded Google map still pins the business, and
+the Google Business Profile itself is public, so the address remains findable
+through Google. If the client wants it genuinely private, the GBP needs to be
+switched to a service-area business with the address hidden — that is a change
+in Google, not on the site.
+
 ## Accessibility
 
 Audited with axe-core (WCAG 2.0/2.1/2.2 A + AA plus best practice) at 412px and
