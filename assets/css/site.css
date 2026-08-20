@@ -276,6 +276,66 @@ h3{font-size:1.18rem;letter-spacing:-.015em}
 .work figcaption{padding:16px 20px;font-size:.9rem;color:var(--text-2)}
 .work figcaption b{display:block;font-family:Fraunces,serif;font-size:1rem;color:var(--ink);margin-bottom:3px}
 
+/* BEFORE / AFTER SLIDER */
+.ba-slider{position:relative}
+.ba-track{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px}
+.ba-track::-webkit-scrollbar{display:none}
+.ba-track:focus-visible{outline:2px solid var(--moss);outline-offset:4px;border-radius:var(--r)}
+.ba-slide{flex:0 0 100%;scroll-snap-align:center;min-width:0}
+
+.ba-frame{position:relative;aspect-ratio:3/2;overflow:hidden;border-radius:var(--r);
+  border:1px solid var(--line);background:var(--sand-2);isolation:isolate;touch-action:pan-y}
+.ba-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* The AFTER photo is the base layer. The BEFORE sits full-size on top and is
+   clipped from the left, so the handle reads left = before, right = after.
+   clip-path keeps the overlay at the frame's dimensions, so it never squashes. */
+.ba-clip{position:absolute;inset:0;clip-path:inset(0 calc(100% - var(--pos,50%)) 0 0);will-change:clip-path}
+
+.ba-tag{position:absolute;top:14px;z-index:3;font-size:.68rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  padding:7px 13px;border-radius:999px;color:#fff;background:rgba(7,20,10,.72);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  pointer-events:none}
+.ba-tag-before{left:14px}
+.ba-tag-after{right:14px;background:rgba(25,85,29,.9)}
+
+.ba-divider{position:absolute;top:0;bottom:0;left:var(--pos,50%);width:3px;background:#fff;z-index:4;
+  transform:translateX(-50%);box-shadow:0 0 0 1px rgba(7,20,10,.18);pointer-events:none}
+.ba-knob{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:50px;height:50px;border-radius:50%;
+  background:#fff;display:grid;place-items:center;box-shadow:0 6px 20px rgba(7,20,10,.32)}
+.ba-knob svg{width:22px;height:22px;stroke:var(--moss);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+
+/* a real range input drives the wipe: free keyboard, touch and AT support */
+.ba-range{position:absolute;inset:0;z-index:5;width:100%;height:100%;margin:0;padding:0;opacity:0;
+  cursor:ew-resize;-webkit-appearance:none;appearance:none;background:transparent;touch-action:none}
+.ba-range::-webkit-slider-thumb{-webkit-appearance:none;width:56px;height:100%;cursor:ew-resize}
+.ba-range::-moz-range-thumb{width:56px;height:100%;border:0;border-radius:0;cursor:ew-resize}
+.ba-range:focus-visible+.ba-caption,.ba-frame:has(.ba-range:focus-visible){outline:2px solid var(--moss);outline-offset:3px}
+
+.ba-caption{padding:20px 2px 0;font-size:.95rem;color:var(--text-2);max-width:64ch}
+.ba-caption b{display:block;font-family:Fraunces,serif;font-size:1.12rem;color:var(--ink);margin-bottom:5px;letter-spacing:-.015em}
+
+.ba-nav{display:flex;align-items:center;justify-content:center;gap:18px;margin-top:26px}
+.ba-arrow{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--paper);cursor:pointer;
+  display:grid;place-items:center;transition:border-color .2s ease,background .2s ease,transform .2s ease}
+.ba-arrow:hover{border-color:var(--moss);transform:translateY(-2px)}
+.ba-arrow:disabled{opacity:.38;cursor:default;transform:none;border-color:var(--line)}
+.ba-arrow svg{width:19px;height:19px;stroke:var(--moss);fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.ba-dots{display:flex;gap:9px;align-items:center}
+.ba-dot{width:9px;height:9px;padding:0;border-radius:50%;border:none;background:var(--sand-2);cursor:pointer;
+  transition:background .2s ease,width .2s ease}
+.ba-dot:hover{background:#CFC9B6}
+.ba-dot.is-on{background:var(--moss);width:26px;border-radius:99px}
+
+@media(max-width:900px){
+  .ba-frame{aspect-ratio:4/3}
+}
+@media(max-width:600px){
+  .ba-frame{aspect-ratio:1/1}
+  .ba-knob{width:42px;height:42px}
+  .ba-tag{font-size:.6rem;padding:5px 10px;top:10px}
+  .ba-tag-before{left:10px} .ba-tag-after{right:10px}
+}
+
 /* TESTIMONIALS */
 .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
 .quote{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:30px 28px;display:flex;flex-direction:column}

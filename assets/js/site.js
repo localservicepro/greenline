@@ -156,6 +156,61 @@
     });
   }
 
+  /* Before/after comparison slider.
+     The wipe is driven by a real <input type="range">, so keyboard and
+     assistive tech work without any extra handling. The track is a native
+     scroll-snap container, so swipe and scroll work with JS disabled — the
+     arrows and dots below are enhancement only. */
+  document.querySelectorAll('.ba').forEach(function (ba) {
+    var range = ba.querySelector('.ba-range');
+    if (!range) return;
+    var apply = function () { ba.style.setProperty('--pos', range.value + '%'); };
+    range.addEventListener('input', apply);
+    apply();
+  });
+
+  document.querySelectorAll('[data-ba-slider]').forEach(function (slider) {
+    var track = slider.querySelector('[data-ba-track]');
+    var prev = slider.querySelector('[data-ba-prev]');
+    var next = slider.querySelector('[data-ba-next]');
+    var dots = Array.prototype.slice.call(slider.querySelectorAll('[data-ba-go]'));
+    var slides = Array.prototype.slice.call(slider.querySelectorAll('.ba-slide'));
+    if (!track || !slides.length) return;
+
+    function current() {
+      var i = Math.round(track.scrollLeft / track.clientWidth);
+      return Math.max(0, Math.min(slides.length - 1, i));
+    }
+    function goTo(i) {
+      i = Math.max(0, Math.min(slides.length - 1, i));
+      track.scrollTo({ left: i * track.clientWidth, behavior: 'smooth' });
+    }
+    function sync() {
+      var i = current();
+      dots.forEach(function (d, n) {
+        d.classList.toggle('is-on', n === i);
+        if (n === i) d.setAttribute('aria-current', 'true');
+        else d.removeAttribute('aria-current');
+      });
+      if (prev) prev.disabled = i === 0;
+      if (next) next.disabled = i === slides.length - 1;
+    }
+
+    if (prev) prev.addEventListener('click', function () { goTo(current() - 1); });
+    if (next) next.addEventListener('click', function () { goTo(current() + 1); });
+    dots.forEach(function (d) {
+      d.addEventListener('click', function () { goTo(+d.getAttribute('data-ba-go')); });
+    });
+
+    var tick;
+    track.addEventListener('scroll', function () {
+      clearTimeout(tick);
+      tick = setTimeout(sync, 90);
+    }, { passive: true });
+    window.addEventListener('resize', sync);
+    sync();
+  });
+
   /* Thank-you page: the default form action is a GET, so the visitor's details
      arrive in the query string. Clear them from the address bar once the page
      has settled, so lead data does not sit in browser history or leak through

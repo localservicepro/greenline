@@ -206,6 +206,38 @@ gallery images at 1200px. Nothing is upscaled beyond its source.
 Alt text lives in `IMG_ALT` in `tools/build.py` and describes what is actually
 in each frame.
 
+### Before / after slider
+
+The homepage recent-work section is a before/after comparison slider built from
+three genuine pairs found in the Drive — same property, same job, photographed
+on arrival and on leaving:
+
+| Pair | Before | After | Job |
+|---|---|---|---|
+| 1 | `20260526_113940` | `20260526_144123` | knee-high grass and dumped sheeting cleared |
+| 2 | `20260629_103620` | `20260629_112741` | overgrown lawn around decking mown and edged |
+| 3 | `20260708_093808` | `20260708_110738` | garden bed cut back to its rock edging |
+
+Pairs were confirmed by matching landmarks across each pair (the same tree,
+fence, decking and paving appear in both frames), not by filename or timestamp
+alone. The framing shifts slightly between shots because they are handheld phone
+photos — normal for trade before/afters.
+
+How it works:
+
+- The wipe is an `<input type="range">` layered invisibly over the frame, so
+  keyboard, touch and assistive tech all work with no extra code
+- The AFTER photo is the base layer and the BEFORE is clipped over it with
+  `clip-path`, so the handle reads left = before, right = after, and neither
+  image squashes as the divider moves
+- The track is a native CSS scroll-snap container — swipe and scroll work with
+  JavaScript disabled; the arrows and dots are enhancement only
+
+The six comparison images add ~1.4 MB, but all of them are lazy-loaded well
+below the fold. Only the hero (544 KB) loads before first paint. WebP was
+tested and came out 1% smaller than JPEG on these frames — grass and foliage
+are high-entropy and compress poorly either way — so they stay JPEG.
+
 **Still missing from the photo set:** no shot of mowing in progress (a mower in
 frame), no loaded trailer or green waste being carted, and no photo of Dave, the
 crew or a branded vehicle. The rubbish removal page therefore uses a cleared-yard

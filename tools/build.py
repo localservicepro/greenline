@@ -96,6 +96,12 @@ IMG_FILES = {
     "work-hedge":         "work-hedge.jpg",
     "work-garden":        "work-garden.jpg",
     "og":                 "og.jpg",
+    "ba1-before":         "ba1-before.jpg",
+    "ba1-after":          "ba1-after.jpg",
+    "ba2-before":         "ba2-before.jpg",
+    "ba2-after":          "ba2-after.jpg",
+    "ba3-before":         "ba3-before.jpg",
+    "ba3-after":          "ba3-after.jpg",
 }
 
 # Alt text describes what is actually in each frame — keyword-relevant, but
@@ -113,6 +119,12 @@ IMG_ALT = {
     "work-hedge": "Shaped topiary hedging along a pool surround, cut square and level",
     "work-garden": "Maintained back garden with a mown lawn, edged beds and the paths blown clean",
     "og": "Greenline Services — lawn mowing, hedge trimming and garden maintenance in Frankston and the Mornington Peninsula",
+    "ba1-before": "Overgrown Frankston backyard before a clean-up, with knee-high grass and dumped sheeting against the fence",
+    "ba1-after": "The same Frankston backyard after the clean-up, mown flat with the paving cleared and the waste gone",
+    "ba2-before": "Patchy, overgrown back lawn around a timber deck before a Greenline Services visit",
+    "ba2-after": "The same back lawn mown even and edged along the garden beds after the visit",
+    "ba3-before": "Garden bed overgrown and spilling across brick paving before a garden maintenance visit in Frankston",
+    "ba3-after": "The same garden bed cut back to its rock edging with the brick paving swept clean",
 }
 
 
@@ -198,6 +210,9 @@ IC = {
     "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     "grid": '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
     "arrow": '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    "arrows": '<path d="M9 7 4 12l5 5M15 7l5 5-5 5"/>',
+    "chev-left": '<path d="M15 5 8 12l7 7"/>',
+    "chev-right": '<path d="m9 5 7 7-7 7"/>',
 }
 STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1Z"/></svg>'
 STARS = '<div class="stars" aria-label="5 out of 5 stars">%s</div>' % (STAR * 5)
@@ -569,6 +584,59 @@ WORK = [
 ]
 
 
+BEFORE_AFTER = [
+    ("ba1", "End-of-lease clean-up",
+     "Knee-high grass and dumped sheeting cleared, the whole yard mown flat and every bit of waste taken away the same day."),
+    ("ba2", "Back lawn brought back",
+     "Overgrown, patchy grass around the decking cut back to an even lawn and edged along the garden beds."),
+    ("ba3", "Garden bed cut back",
+     "A bed spilling out across the brick paving, cut back to its rock edging with the paving swept clean."),
+]
+
+
+def before_after_slider():
+    """Before/after comparison slider for the recent work section.
+
+    Each slide is a wipe comparison driven by a real <input type="range">, so
+    it is keyboard operable and works with assistive tech for free. The track
+    uses native CSS scroll-snap, so swiping and scrolling still work with no
+    JavaScript at all — the buttons and dots are progressive enhancement.
+    """
+    slides = []
+    for i, (key, title, text) in enumerate(BEFORE_AFTER):
+        slides.append(f"""<div class="ba-slide" role="group" aria-roledescription="slide" aria-label="{i+1} of {len(BEFORE_AFTER)}: {title}">
+        <div class="ba" style="--pos:50%">
+          <div class="ba-frame">
+            {picture(key + '-after', cls='ba-img')}
+            <div class="ba-clip">{picture(key + '-before', cls='ba-img')}</div>
+            <span class="ba-tag ba-tag-before" aria-hidden="true">Before</span>
+            <span class="ba-tag ba-tag-after" aria-hidden="true">After</span>
+            <span class="ba-divider" aria-hidden="true"><span class="ba-knob">{svg('arrows')}</span></span>
+            <input class="ba-range" type="range" min="0" max="100" value="50" step="1"
+                   aria-label="{title}: drag to compare the before and after photos">
+          </div>
+          <div class="ba-caption"><b>{title}</b>{text}</div>
+        </div>
+      </div>""")
+
+    dots = "".join(
+        '<button type="button" class="ba-dot%s" data-ba-go="%d" aria-label="Show job %d of %d"%s></button>'
+        % (" is-on" if i == 0 else "", i, i + 1, len(BEFORE_AFTER),
+           ' aria-current="true"' if i == 0 else "")
+        for i in range(len(BEFORE_AFTER)))
+
+    return f"""<div class="ba-slider" data-ba-slider>
+      <div class="ba-track" data-ba-track tabindex="0" aria-label="Before and after jobs, scrollable">
+        {"".join(slides)}
+      </div>
+      <div class="ba-nav">
+        <button type="button" class="ba-arrow" data-ba-prev aria-label="Previous job">{svg('chev-left')}</button>
+        <div class="ba-dots" role="tablist" aria-label="Choose a job">{dots}</div>
+        <button type="button" class="ba-arrow" data-ba-next aria-label="Next job">{svg('chev-right')}</button>
+      </div>
+    </div>"""
+
+
 def work_gallery():
     out = []
     for key, title, text in WORK:
@@ -874,9 +942,9 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">Our recent work</span>
       <h2>Jobs from around Frankston and the Peninsula</h2>
-      <p class="lede">A sample of the properties we look after week to week &mdash; regular mowing rounds, coastal gardens and gutter cleans booked ahead of storm season.</p>
+      <p class="lede">Real properties, photographed on the day. Drag the handle across each one to see what the yard looked like when we arrived and what we left behind.</p>
     </div>
-    {work_gallery()}
+    {before_after_slider()}
   </div>
 </section>
 
