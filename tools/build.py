@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Greenline Services — static site generator.
+Prestige Property Care — static site generator.
 
 Builds every page in the site from the shared chrome + per-page content below,
 so navigation, schema, canonicals and metadata can never drift between pages.
@@ -14,26 +14,48 @@ NOTE: edit content HERE, not in the generated .html files — a rebuild overwrit
 import os
 import re
 import html
+import json
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ---------------------------------------------------------------- business data
-SITE = "https://greenlineservices.com.au"
+SITE = "https://prestigepropertycare.com.au"
+
+# Only the weights the stylesheet actually uses: Fraunces 600/700/900, Karla 400-700.
+FONT_HREF = ("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900"
+             "&family=Karla:wght@400;500;600;700&display=swap")
 BIZ = {
-    "name": "Greenline Services",
+    "name": "Prestige Property Care",
+    # The street address is deliberately NOT shown anywhere on the pages. It
+    # lives only in the LocalBusiness JSON-LD below, which is the legitimate
+    # machine-readable channel — hiding text in the markup to feed crawlers
+    # would be cloaking. tools/check.py fails the build if it leaks into any
+    # visible copy.
     "street": "2/15 St Johns Ave",
+    "public_address": "Frankston VIC 3199",
     "locality": "Frankston",
     "region": "VIC",
     "postcode": "3199",
     "country": "AU",
-    "phone_display": "0494 154 184",
-    "phone_link": "+61494154184",
-    "phone_intl": "+61 494 154 184",
-    "email": "davidcoelho92@hotmail.com",
+    "phone_display": "0466 687 252",
+    "phone_link": "+61466687252",
+    "phone_intl": "+61 466 687 252",
+    # The amendment sheet wrote this as "Dave@prestgiepropertycare.com.au".
+    # prestgiepropertycare.com.au does not resolve and prestigepropertycare.com.au
+    # does, so the transposed spelling is treated as a typo. If the mailbox really
+    # is on the misspelt domain, change this one line and rebuild.
+    "email": "dave@prestigepropertycare.com.au",
     "owner": "Dave Coelho",
     "lat": -38.1442,
     "lng": 145.1281,
+    "facebook": "https://www.facebook.com/profile.php?id=61594050001979",
+    "instagram": "https://www.instagram.com/prestigepropertycarefrankston/",
 }
+
+# The logo mark. Three alternatives live in assets/img/logo/ (mark-crest.svg,
+# mark-pleaf.svg, mark-level.svg) — switching the brand over is this one line
+# plus a re-run of tools/gen-icons.py to redraw the favicon and app icons.
+LOGO_MARK = "/assets/img/logo/mark-pleaf.svg"
 
 SUBURBS = [
     "Frankston", "Frankston South", "Frankston North", "Seaford", "Langwarrin",
@@ -54,7 +76,7 @@ GMB_EMBED = (
 # in the page DOM, every field needs a name attribute, and nothing may call
 # preventDefault() on a valid submit. See README.
 GHL_TRACKING = (
-    '<script \n'
+    '<script defer\n'
     '  src="https://link.msgsndr.com/js/external-tracking.js"\n'
     '  data-tracking-id="tk_9f5144f196b340e59b8396dd9921dc07">\n'
     '</script>\n'
@@ -81,28 +103,99 @@ FORM_REDIRECT_FIELD = None      # hidden redirect field name, if the endpoint ne
 FORM_HIDDEN = {}                # any extra hidden inputs the endpoint needs
 
 # ---------------------------------------------------------------------- images
-# Generated with Recraft V4.1 for this build. Run tools/localise-images.sh from a
-# machine with open internet access to pull them into assets/img/ and flip the
-# switch below to serve them from the site's own domain.
-USE_LOCAL_IMAGES = False
-IMG_CDN = "https://d8j0ntlcm91z4.cloudfront.net/user_3EWpoiN6nlg900Jz4gzZzRlxgtK/"
-IMG_REMOTE = {}          # filled in by the IMAGES block appended below
-IMG_ALT = {}
+# Real job photography supplied by the client (Google Drive), resized and
+# compressed for the web. Nothing here is stock or generated.
+IMG_FILES = {
+    "hero":               "hero.jpg",
+    "lawn-mowing":        "lawn-mowing.jpg",
+    "gutter-cleaning":    "gutter-cleaning.jpg",
+    "garden-maintenance": "garden-maintenance.jpg",
+    "hedge-trimming":     "hedge-trimming.jpg",
+    "rubbish-removal":    "rubbish-removal.jpg",
+    "garden-clean-ups":   "garden-clean-ups.jpg",
+    "about-dave":         "about-dave.jpg",
+    "work-lawn":          "work-lawn.jpg",
+    "work-hedge":         "work-hedge.jpg",
+    "work-garden":        "work-garden.jpg",
+    "og":                 "og.jpg",
+    "ba1-before":         "ba1-before.jpg",
+    "ba1-after":          "ba1-after.jpg",
+    "ba2-before":         "ba2-before.jpg",
+    "ba2-after":          "ba2-after.jpg",
+    "ba3-before":         "ba3-before.jpg",
+    "ba3-after":          "ba3-after.jpg",
+}
+
+# Alt text describes what is actually in each frame — keyword-relevant, but
+# never claiming more than the photo shows.
+IMG_ALT = {
+    "hero": "Freshly mown back lawn with stepping stones and clipped garden beds at a Frankston home maintained by Prestige Property Care",
+    "lawn-mowing": "Freshly mown back lawn edged along the concrete path, with planted garden beds behind, on a Mornington Peninsula property",
+    "gutter-cleaning": "Roof gutter in Frankston packed with gum leaves and bark before a Prestige Property Care gutter clean",
+    "garden-maintenance": "Garden bed remulched and re-edged beside a mown lawn during a regular garden maintenance visit in Frankston",
+    "hedge-trimming": "Large hedge cut square and level on every face after hedge trimming in Frankston",
+    "rubbish-removal": "Backyard cleared back to bare ground in Frankston, with all green waste and rubbish taken away",
+    "garden-clean-ups": "Overgrown Frankston backyard with knee-high grass and debris, before an end-of-lease garden clean up",
+    "about-dave": "Tidy front garden in Frankston with clipped shrubs, a swept aggregate path and a mown lawn",
+    "work-lawn": "Sloping back lawn mown and edged with the garden beds cut clean around it",
+    "work-hedge": "Shaped topiary hedging along a pool surround, cut square and level",
+    "work-garden": "Maintained back garden with a mown lawn, edged beds and the paths blown clean",
+    "og": "Prestige Property Care — lawn mowing, hedge trimming and garden maintenance in Frankston and the Mornington Peninsula",
+    "ba1-before": "Overgrown Frankston backyard before a clean-up, with knee-high grass and dumped sheeting against the fence",
+    "ba1-after": "The same Frankston backyard after the clean-up, mown flat with the paving cleared and the waste gone",
+    "ba2-before": "Patchy, overgrown back lawn around a timber deck before a Prestige Property Care visit",
+    "ba2-after": "The same back lawn mown even and edged along the garden beds after the visit",
+    "ba3-before": "Garden bed overgrown and spilling across brick paving before a garden maintenance visit in Frankston",
+    "ba3-after": "The same garden bed cut back to its rock edging with the brick paving swept clean",
+}
+
+
+# Responsive variants + real intrinsic dimensions, written by tools/gen-images.py.
+# Read here with the stdlib so this build script keeps zero dependencies.
+_MANIFEST_PATH = os.path.join(ROOT, "assets", "img", "manifest.json")
+try:
+    with open(_MANIFEST_PATH, encoding="utf-8") as _fh:
+        IMG_META = json.load(_fh)
+except FileNotFoundError:       # not generated yet — fall back to plain <img>
+    IMG_META = {}
 
 
 def img(key):
-    """Resolve a logical image name to a URL."""
-    if USE_LOCAL_IMAGES:
-        return "/assets/img/%s.png" % key
-    return IMG_CDN + IMG_REMOTE[key]
+    return "/assets/img/" + IMG_FILES[key]
+
+
+def _meta(key):
+    return IMG_META.get(os.path.splitext(IMG_FILES[key])[0], {})
+
+
+def srcset_for(key):
+    rows = _meta(key).get("srcset") or []
+    return ", ".join("/assets/img/%s %dw" % (f, w) for w, f in rows)
+
+
+SPLIT_SIZES = "(max-width:900px) 100vw, 50vw"
+CARD_SIZES = "(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px"
+BA_SIZES = "(max-width:1244px) 100vw, 1116px"
 
 
 def picture(key, cls="", sizes=None, eager=False, extra=""):
-    loading = 'loading="eager" fetchpriority="high"' if eager else 'loading="lazy"'
-    s = ' sizes="%s"' % sizes if sizes else ""
+    """An <img> with its real intrinsic size and a responsive srcset.
+
+    The width/height attributes must match the file, or the browser reserves
+    the wrong box and the page shifts as images land.
+    """
+    m = _meta(key)
+    w, h = m.get("w", 1200), m.get("h", 900)
+    loading = ('loading="eager" fetchpriority="high"' if eager
+               else 'loading="lazy"')
+    ss = srcset_for(key)
+    ss_attr = ' srcset="%s"' % ss if ss else ""
+    # A srcset without sizes makes the browser assume 100vw and over-download.
+    sz_attr = ' sizes="%s"' % (sizes or "100vw") if ss else ""
     c = ' class="%s"' % cls if cls else ""
-    return ('<img src="%s" alt="%s"%s width="1200" height="900" %s decoding="async"%s%s>'
-            % (img(key), html.escape(IMG_ALT[key]), c, loading, s, extra))
+    return ('<img src="%s"%s%s alt="%s"%s width="%d" height="%d" %s decoding="async"%s>'
+            % (img(key), ss_attr, sz_attr, html.escape(IMG_ALT[key]), c, w, h,
+               loading, extra))
 
 
 # ------------------------------------------------------------------- services
@@ -175,9 +268,17 @@ IC = {
     "clock": '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
     "grid": '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
     "arrow": '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    "arrows": '<path d="M9 7 4 12l5 5M15 7l5 5-5 5"/>',
+    "facebook": '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/>',
+    "instagram": ('<rect x="2" y="2" width="20" height="20" rx="5"/>'
+                  '<path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4Z"/>'
+                  '<path d="M17.5 6.5h.01"/>'),
+    "chev-left": '<path d="M15 5 8 12l7 7"/>',
+    "chev-right": '<path d="m9 5 7 7-7 7"/>',
 }
 STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8-6.2-3.3-6.2 3.3L7 14.2l-5-4.9 6.9-1Z"/></svg>'
-STARS = '<div class="stars" aria-label="5 out of 5 stars">%s</div>' % (STAR * 5)
+STARS = ('<div class="stars" role="img" aria-label="Rated 5 out of 5">%s</div>'
+         % (STAR * 5))
 
 
 def svg(name, cls="", size=None):
@@ -186,47 +287,22 @@ def svg(name, cls="", size=None):
     return '<svg viewBox="0 0 24 24"%s%s aria-hidden="true">%s</svg>' % (attrs, dim, IC[name])
 
 
-# --------------------------------------------------------------------- IMAGES
-IMG_REMOTE.update({
-    "hero":                 "hf_20260819_123233_fa5a8a1c-cabc-4249-a8c6-059d46080806.png",
-    "lawn-mowing":          "hf_20260819_123233_260d5f73-7fb3-44cd-96c8-ff8bbbab7b43.png",
-    "gutter-cleaning":      "hf_20260819_123233_0dfd591f-fffa-4d91-9506-bb7904fb736d.png",
-    "garden-maintenance":   "hf_20260819_123233_c6cafff7-a0ca-4f67-8d4a-fab24d3e695d.png",
-    "hedge-trimming":       "hf_20260819_123233_1e21adb0-7221-4fbd-a5da-2cca2e051a8e.png",
-    "rubbish-removal":      "hf_20260819_123233_4da63f9f-98bc-43e0-8a89-d1edb27732a3.png",
-    "garden-clean-ups":     "hf_20260819_123529_50a8bac6-6f5d-445d-93e2-99c2747b66c5.png",
-    "about-dave":           "hf_20260819_123529_a7040eb6-a422-44ad-9608-2e3a1453bb0d.png",
-    "work-edging":          "hf_20260819_123233_5dd26d6f-c9dc-4d20-bd52-627396a03585.png",
-    "work-peninsula":       "hf_20260819_123233_1e6435e5-9980-406d-83d0-8c1fc9fe7df1.png",
-    "work-gutters":         "hf_20260819_123233_355bf930-b6ad-4fe7-bae0-9766e62b10c5.png",
-    "og":                   "hf_20260819_123233_8da94588-3ea2-44be-aed5-f3dff83853e7.png",
-})
-
-# Alt text: keyword-relevant but written for a person, per the SEO brief.
-IMG_ALT.update({
-    "hero": "Freshly mown Frankston front lawn with striped grass and a trimmed hedge after a Greenline Services visit",
-    "lawn-mowing": "Greenline Services worker mowing a large backyard lawn in Mornington with a catcher mower",
-    "gutter-cleaning": "Gutter cleaning in Frankston — a Greenline Services technician clearing leaves from the gutter of a brick home",
-    "garden-maintenance": "Frankston gardener weeding and mulching a native garden bed during a regular garden maintenance visit",
-    "hedge-trimming": "Hedge trimming in Frankston — a tall garden hedge being cut level with a petrol hedge trimmer",
-    "rubbish-removal": "Green waste and rubbish removal in Frankston with a trailer loaded with branches and hedge clippings",
-    "garden-clean-ups": "End-of-lease garden clean up in Frankston with the lawn cut and edged and the beds weeded for inspection",
-    "about-dave": "Dave Coelho of Greenline Services with the work ute and mowing trailer on a Frankston street",
-    "work-edging": "Sharp lawn edge cut along a concrete path beside a striped freshly mown Frankston lawn",
-    "work-peninsula": "Tidy coastal front garden on the Mornington Peninsula maintained by Greenline Services",
-    "work-gutters": "Clean, clear roof gutter and downpipe on a Frankston home after a Greenline Services gutter clean",
-    "og": "Greenline Services — lawn mowing, garden maintenance and gutter cleaning in Frankston and the Mornington Peninsula",
-})
 
 
 # ------------------------------------------------------------------ page chrome
 def head(page):
     """<head> for one page."""
     url = SITE + page["path"]
-    og_img = img("og") if not USE_LOCAL_IMAGES else SITE + "/assets/img/og.png"
-    depth_css = "/assets/css/site.css"
+    og_img = SITE + img("og")
+    depth_css = "/assets/css/site.min.css"
     extra = page.get("head_extra", "")
     robots = page.get("robots", "index, follow, max-image-preview:large, max-snippet:-1")
+    lcp = page.get("lcp")
+    lcp_preload = ""
+    if lcp:
+        ss = srcset_for(lcp)
+        lcp_preload = ('<link rel="preload" as="image" href="%s"%s imagesizes="100vw" fetchpriority="high">\n'
+                       % (img(lcp), ' imagesrcset="%s"' % ss if ss else ""))
     return f"""<!DOCTYPE html>
 <html lang="en-AU">
 <head>
@@ -236,7 +312,7 @@ def head(page):
 <meta name="description" content="{page['desc']}">
 <link rel="canonical" href="{url}">
 <meta name="robots" content="{robots}">
-<meta name="theme-color" content="#0E1F18">
+<meta name="theme-color" content="#0C2A12">
 <meta name="geo.region" content="AU-VIC">
 <meta name="geo.placename" content="Frankston, Victoria">
 <meta name="geo.position" content="{BIZ['lat']};{BIZ['lng']}">
@@ -244,7 +320,7 @@ def head(page):
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_AU">
-<meta property="og:site_name" content="Greenline Services">
+<meta property="og:site_name" content="Prestige Property Care">
 <meta property="og:title" content="{page['title']}">
 <meta property="og:description" content="{page['desc']}">
 <meta property="og:url" content="{url}">
@@ -256,8 +332,15 @@ def head(page):
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,900&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="{FONT_HREF}">
+<link rel="stylesheet" href="{FONT_HREF}" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="{FONT_HREF}"></noscript>
+<link rel="icon" href="{LOGO_MARK}" type="image/svg+xml">
+<link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
 <link rel="stylesheet" href="{depth_css}">
+{lcp_preload}
 
 {GHL_TRACKING}{extra}</head>
 <body>
@@ -265,7 +348,12 @@ def head(page):
 """
 
 
-def site_header(active, solid=False):
+def site_header(active, solid=False, modal_cta=True):
+    # On the contact page the form is right there in the hero, so the header
+    # button scrolls to it instead of opening the popup.
+    cta_attr = ' data-quote-open' if modal_cta else ''
+    cta_href = '/contact/' if modal_cta else '#quote'
+
     dd_items = ['''<a class="dd-item" role="menuitem" href="/services/">
             <span class="dd-icon" aria-hidden="true">%s</span>
             <span class="dd-text"><strong>All Services</strong><em>Complete property upkeep</em></span>
@@ -281,9 +369,9 @@ def site_header(active, solid=False):
 
     return f"""<header class="site-header{' solid' if solid else ''}" id="top">
   <div class="nav-inner">
-    <a href="/" class="brand" aria-label="Greenline Services home">
-      <span class="brand-mark" aria-hidden="true">{svg('leaf')}</span>
-      <span class="brand-name">Greenline Services</span>
+    <a href="/" class="brand" aria-label="Prestige Property Care home">
+      <span class="brand-mark"><img src="{LOGO_MARK}" alt="Prestige Property Care logo" width="120" height="120" decoding="async"></span>
+      <span class="brand-name">Prestige Property Care</span>
     </a>
 
     <nav class="nav-main" aria-label="Main navigation">
@@ -306,7 +394,7 @@ def site_header(active, solid=False):
 
     <div class="nav-actions">
       <a href="tel:{BIZ['phone_link']}" class="nav-phone">{BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-cta">Get a Free Quote</a>
+      <a href="{cta_href}" class="btn-cta"{cta_attr}>Get a Free Quote</a>
     </div>
 
     <button class="nav-burger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
@@ -327,6 +415,7 @@ def site_header(active, solid=False):
   <a href="/about/">About</a>
   <a href="/#areas">Areas</a>
   <a href="/contact/">Contact</a>
+  <a href="{cta_href}"{cta_attr} class="mobile-quote">Get a free quote</a>
   <a href="tel:{BIZ['phone_link']}">Call {BIZ['phone_display']}</a>
 </nav>
 """
@@ -346,7 +435,6 @@ def crumbs(trail):
 
 def cta_band(heading, text):
     return f"""<section class="cta-band">
-  <div class="stripes" aria-hidden="true"></div>
   <div class="wrap">
     <div>
       <h2>{heading}</h2>
@@ -354,58 +442,84 @@ def cta_band(heading, text):
     </div>
     <div class="hero-cta">
       <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Request a quote</a>
+      <button type="button" class="btn-lg btn-ghost" data-quote-open>Request a quote</button>
     </div>
   </div>
 </section>
 """
 
 
-def site_footer():
+def quote_modal():
+    """Quote popup, rendered once per page.
+
+    A real <form> in the page DOM with the same six GHL field names as the
+    inline form — hidden with CSS, never `disabled`, so GHL still captures it.
+    Ids are prefixed `qm-` so they cannot collide with an inline form.
+    """
+    return f"""<div class="modal" id="quote-modal" hidden>
+  <div class="modal-scrim" data-quote-close></div>
+  <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="quote-modal-title">
+    <button class="modal-close" type="button" aria-label="Close" data-quote-close>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="modal-head">
+      <span class="eyebrow">Free quote</span>
+      <h2 id="quote-modal-title">Tell us about the property</h2>
+      <p>Fixed price, no call-out fee, no obligation. Or call <a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a> for a same-day answer.</p>
+    </div>
+    {quote_form(idp="qm", card=False)}
+  </div>
+</div>
+"""
+
+
+def site_footer(with_modal=True):
+    modal = quote_modal() if with_modal else ""
     svc_links = "".join('<li><a href="/services/%s/">%s</a></li>' % (s["slug"], s["nav"]) for s in SERVICES)
     area_links = "".join('<li><a href="/#areas">%s</a></li>' % s for s in
                          ["Frankston", "Frankston South", "Seaford", "Langwarrin",
                           "Carrum Downs", "Mount Eliza", "Mornington", "Mount Martha"])
     return f"""<footer>
-  <div class="stripes" aria-hidden="true"></div>
   <div class="wrap">
     <div class="f-grid">
       <div class="f-about">
         <a href="/" class="brand">
-          <span class="brand-mark" aria-hidden="true">{svg('leaf')}</span>
-          <span class="brand-name">Greenline Services</span>
+          <span class="brand-mark"><img src="{LOGO_MARK}" alt="Prestige Property Care logo" width="120" height="120" loading="lazy" decoding="async"></span>
+          <span class="brand-name">Prestige Property Care</span>
         </a>
         <p>Lawn, garden and property maintenance for Frankston and the Mornington Peninsula. Locally owned and run by {BIZ['owner']}.</p>
+        <ul class="f-social">
+          <li><a href="{BIZ['facebook']}" aria-label="Prestige Property Care on Facebook" rel="noopener">{svg('facebook')}</a></li>
+          <li><a href="{BIZ['instagram']}" aria-label="Prestige Property Care on Instagram" rel="noopener">{svg('instagram')}</a></li>
+        </ul>
       </div>
       <div>
-        <h4>Services</h4>
+        <h2 class="f-head">Services</h2>
         <ul>{svc_links}</ul>
       </div>
       <div>
-        <h4>Areas served</h4>
+        <h2 class="f-head">Areas served</h2>
         <ul>{area_links}</ul>
       </div>
       <div>
-        <h4>Contact</h4>
+        <h2 class="f-head">Contact</h2>
         <ul>
           <li><a href="tel:{BIZ['phone_link']}">{BIZ['phone_display']}</a></li>
           <li><a href="mailto:{BIZ['email']}">{BIZ['email']}</a></li>
-          <li>{BIZ['street']}<br>{BIZ['locality']} {BIZ['region']} {BIZ['postcode']}</li>
+          <li>{BIZ['public_address']}</li>
           <li><a href="/contact/">Request a free quote</a></li>
-          <li><a href="/about/">About Greenline</a></li>
+          <li><a href="/about/">About Prestige</a></li>
         </ul>
       </div>
     </div>
     <div class="f-bottom">
-      <span>&copy; 2026 Greenline Services. Frankston, Victoria. ABN details on request.</span>
+      <span>&copy; 2026 Prestige Property Care. Frankston, Victoria. ABN details on request.</span>
       <span>Lawn mowing in Frankston, gardening and property maintenance across the Mornington Peninsula.</span>
     </div>
   </div>
 </footer>
 
-<a href="tel:{BIZ['phone_link']}" class="callbar"><span>{svg('phone')} Call {BIZ['phone_display']}</span></a>
-
-<script src="/assets/js/site.js" defer></script>
+{modal}<script src="/assets/js/site.js" defer></script>
 </body>
 </html>
 """
@@ -430,7 +544,7 @@ def nap_list():
   </li>
   <li>
     <span class="ico" aria-hidden="true">{svg('pin')}</span>
-    <span><b>Address</b>{BIZ['street']}<br>{BIZ['locality']} {BIZ['region']} {BIZ['postcode']}</span>
+    <span><b>Based in</b>{BIZ['public_address']}<br>Mobile service &mdash; we come to you</span>
   </li>
   <li>
     <span class="ico" aria-hidden="true">{svg('clock')}</span>
@@ -443,7 +557,7 @@ def nap_list():
 </ul>"""
 
 
-def quote_form(preselect=None, heading=None):
+def quote_form(preselect=None, heading=None, idp="qf", card=True):
     """The quote form.
 
     Field names map 1:1 onto the GHL contact fields:
@@ -452,11 +566,20 @@ def quote_form(preselect=None, heading=None):
         phone            -> {{contact.phone}}
         property_address -> {{contact.property_address}}
         service_needed   -> {{contact.service_needed}}
+        property_size    -> {{contact.property_size}}
         job_notes        -> {{contact.job_notes}}
 
     Submits natively (no preventDefault anywhere) so the GHL tracking script
     can read the submission. Do not add a JS handler that blocks submit.
     """
+    sizes = ["Small &mdash; under 300m&sup2;",
+             "Medium &mdash; 300&ndash;600m&sup2;",
+             "Large &mdash; 600&ndash;1000m&sup2;",
+             "Acreage &mdash; over 1000m&sup2;",
+             "Not sure"]
+    size_opts = '<option value="">Select a size</option>' + "".join(
+        "<option>%s</option>" % x for x in sizes)
+
     opts = []
     labels = ["Lawn mowing", "Gutter cleaning", "Garden maintenance",
               "Hedge trimming &amp; edging", "Green waste &amp; rubbish removal",
@@ -473,33 +596,41 @@ def quote_form(preselect=None, heading=None):
     for k, v in FORM_HIDDEN.items():
         hidden += '<input type="hidden" name="%s" value="%s">\n    ' % (k, v)
 
-    head_html = '<h3 style="margin-bottom:18px">%s</h3>' % heading if heading else ""
-    return f"""<div class="contact-card">
+    # h2, not h3: on the contact page this is the first heading after the h1,
+    # and jumping h1 -> h3 fails the heading-order audit.
+    head_html = '<h2 class="form-head">%s</h2>' % heading if heading else ""
+    open_card = '<div class="contact-card">' if card else ""
+    close_card = "</div>" if card else ""
+    return f"""{open_card}
   {head_html}<form class="quote-form" action="{FORM_ACTION}" method="{FORM_METHOD}">
     {hidden}<div class="form-grid">
       <div class="field">
-        <label for="qf-full_name">Name</label>
-        <input type="text" id="qf-full_name" name="full_name" required autocomplete="name" placeholder="Your name">
+        <label for="{idp}-full_name">Name</label>
+        <input type="text" id="{idp}-full_name" name="full_name" required autocomplete="name" placeholder="Your name">
       </div>
       <div class="field">
-        <label for="qf-email">Email</label>
-        <input type="email" id="qf-email" name="email" required autocomplete="email" placeholder="Enter your email">
+        <label for="{idp}-email">Email</label>
+        <input type="email" id="{idp}-email" name="email" required autocomplete="email" placeholder="Enter your email">
       </div>
       <div class="field">
-        <label for="qf-phone">Phone</label>
-        <input type="tel" id="qf-phone" name="phone" required autocomplete="tel" placeholder="Enter your phone">
+        <label for="{idp}-phone">Phone</label>
+        <input type="tel" id="{idp}-phone" name="phone" required autocomplete="tel" placeholder="Enter your phone">
       </div>
       <div class="field">
-        <label for="qf-service_needed">Service needed</label>
-        <select id="qf-service_needed" name="service_needed">{"".join(opts)}</select>
+        <label for="{idp}-service_needed">Service needed</label>
+        <select id="{idp}-service_needed" name="service_needed">{"".join(opts)}</select>
       </div>
       <div class="field full">
-        <label for="qf-property_address">Property address</label>
-        <input type="text" id="qf-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
+        <label for="{idp}-property_address">Property address</label>
+        <input type="text" id="{idp}-property_address" name="property_address" required autocomplete="street-address" placeholder="e.g. 12 Smith St, Frankston VIC">
       </div>
       <div class="field full">
-        <label for="qf-job_notes">Job notes</label>
-        <textarea id="qf-job_notes" name="job_notes" placeholder="Rough size of the yard, how long since it was last done, anything else we should know&hellip;"></textarea>
+        <label for="{idp}-property_size">Property size</label>
+        <select id="{idp}-property_size" name="property_size">{size_opts}</select>
+      </div>
+      <div class="field full">
+        <label for="{idp}-job_notes">Job notes</label>
+        <textarea id="{idp}-job_notes" name="job_notes" placeholder="How long since it was last done, access notes, anything else we should know&hellip;"></textarea>
       </div>
       <div class="field full" style="margin-bottom:0">
         <button type="submit" class="btn-submit">Send my quote request</button>
@@ -507,7 +638,7 @@ def quote_form(preselect=None, heading=None):
       </div>
     </div>
   </form>
-</div>"""
+{close_card}"""
 
 
 def areas_grid():
@@ -522,7 +653,7 @@ def service_cards(exclude=None, limit=None):
     out = []
     for s in items:
         out.append(f"""<a class="svc" href="/services/{s['slug']}/">
-        <span class="svc-photo">{picture(s['img'])}</span>
+        <span class="svc-photo">{picture(s['img'], sizes='(max-width:600px) 100vw, (max-width:1040px) 50vw, 360px')}</span>
         <span class="svc-body">
           <span class="svc-icon" aria-hidden="true"><svg viewBox="0 0 24 24">{s['icon']}</svg></span>
           <h3>{s['card_title']}</h3>
@@ -533,38 +664,103 @@ def service_cards(exclude=None, limit=None):
     return '<div class="svc-grid">%s</div>' % "".join(out)
 
 
+# Captions describe the job in the frame. No suburb is named unless it is known,
+# so nothing here invents a location for a real client's property.
 WORK = [
-    ("work-edging", "Lawn edging, Frankston", "Weekly round on a Frankston South property &mdash; mown, caught and edged along every path and drive."),
-    ("work-peninsula", "Front garden, Mount Eliza", "Fortnightly maintenance on a coastal Peninsula block: hedges shaped, beds weeded, lawn kept even."),
-    ("work-gutters", "Gutter clean, Seaford", "Full gutter and downpipe clear before storm season, with all debris bagged and taken away."),
+    ("work-lawn", "Mown, caught and edged",
+     "A regular round: the lawn cut and caught, then every edge along the paths and beds cut clean."),
+    ("work-hedge", "Hedges shaped square",
+     "Pool-surround hedging cut level on every face, with the clippings taken away the same day."),
+    ("work-garden", "The whole property kept tidy",
+     "Lawn mown, beds edged and mulched, and the paths blown down before we left."),
 ]
+
+
+BEFORE_AFTER = [
+    ("ba1", "End-of-lease clean-up",
+     "Knee-high grass and dumped sheeting cleared, the whole yard mown flat and every bit of waste taken away the same day."),
+    ("ba2", "Back lawn brought back",
+     "Overgrown, patchy grass around the decking cut back to an even lawn and edged along the garden beds."),
+    ("ba3", "Garden bed cut back",
+     "A bed spilling out across the brick paving, cut back to its rock edging with the paving swept clean."),
+]
+
+
+def before_after_slider():
+    """Before/after comparison slider for the recent work section.
+
+    Each slide is a wipe comparison driven by a real <input type="range">, so
+    it is keyboard operable and works with assistive tech for free. The track
+    uses native CSS scroll-snap, so swiping and scrolling still work with no
+    JavaScript at all — the buttons and dots are progressive enhancement.
+    """
+    slides = []
+    for i, (key, title, text) in enumerate(BEFORE_AFTER):
+        slides.append(f"""<div class="ba-slide" role="group" aria-roledescription="slide" aria-label="{i+1} of {len(BEFORE_AFTER)}: {title}">
+        <div class="ba" style="--pos:50%">
+          <div class="ba-frame">
+            {picture(key + '-after', cls='ba-img', sizes=BA_SIZES)}
+            <div class="ba-clip">{picture(key + '-before', cls='ba-img', sizes=BA_SIZES)}</div>
+            <span class="ba-tag ba-tag-before" aria-hidden="true">Before</span>
+            <span class="ba-tag ba-tag-after" aria-hidden="true">After</span>
+            <span class="ba-divider" aria-hidden="true"><span class="ba-knob">{svg('arrows')}</span></span>
+            <input class="ba-range" type="range" min="0" max="100" value="50" step="1"
+                   aria-label="{title}: drag to compare the before and after photos">
+          </div>
+          <div class="ba-caption"><b>{title}</b>{text}</div>
+        </div>
+      </div>""")
+
+    dots = "".join(
+        '<button type="button" class="ba-dot%s" data-ba-go="%d" aria-label="Show job %d of %d"%s></button>'
+        % (" is-on" if i == 0 else "", i, i + 1, len(BEFORE_AFTER),
+           ' aria-current="true"' if i == 0 else "")
+        for i in range(len(BEFORE_AFTER)))
+
+    return f"""<div class="ba-slider" data-ba-slider>
+      <div class="ba-track" data-ba-track tabindex="0" aria-label="Before and after jobs, scrollable">
+        {"".join(slides)}
+      </div>
+      <div class="ba-nav">
+        <button type="button" class="ba-arrow" data-ba-prev aria-label="Previous job">{svg('chev-left')}</button>
+        <div class="ba-dots" role="group" aria-label="Choose a job">{dots}</div>
+        <button type="button" class="ba-arrow" data-ba-next aria-label="Next job">{svg('chev-right')}</button>
+      </div>
+    </div>"""
 
 
 def work_gallery():
     out = []
     for key, title, text in WORK:
         out.append('<figure class="work">%s<figcaption><b>%s</b>%s</figcaption></figure>'
-                   % (picture(key), title, text))
+                   % (picture(key, sizes=CARD_SIZES), title, text))
     return '<div class="work-grid">%s</div>' % "".join(out)
 
 
+# Real reviews from the Prestige Property Care Google Business Profile, quoted
+# verbatim. Do not edit the wording, and do not add invented ones — fabricated
+# testimonials are a breach of Australian Consumer Law.
 TESTIMONIALS = [
-    ("Dave has been doing our lawns fortnightly for over a year. Same bloke every time, always turns up when he says, and the edges are always sharp. Never had to chase him once.",
-     "Rebecca M.", "Frankston South"),
-    ("Booked an end-of-lease clean-up with three days&rsquo; notice. The yard was a jungle and they had it back to inspection standard in a day. We got the full bond back.",
-     "Josh T.", "Carrum Downs"),
-    ("Gutters were overflowing every time it rained. Greenline cleared both sides and the downpipes, showed me photos of the before and after, and took all the mess with them.",
-     "Angela P.", "Mount Eliza"),
+    ("Dave did a fantastic job on our overgrown front yard. He got it looking great in just a few hours and saved me a full day&rsquo;s work. Friendly, professional, and easy to deal with. Highly recommend. Thanks mate!",
+     "Stefan Nel"),
+    ("Dave is brilliant. Fun, friendly and an incredible worker. Always punctual and gives that little bit extra. Had gutters cleaned for the first time in years, thrilled with the result. And third time he has edged and mowed the lawns. Great bloke, great ethics, you won&rsquo;t be disappointed. 11/10",
+     "Trudi Maulday"),
+    ("Yesterday was the second time I have used Dave to do my garden, and I&rsquo;m happy to say that both times he has done a great job. Happy to recommend him, he was punctual, efficient and friendly. He left my garden looking fab, and cleaned up all the mess.",
+     "Claudine Barry"),
+    ("Dave took it on board to clear out my aunty&rsquo;s property at short notice. He was thorough, prompt and did an amazing job. Would highly recommend his services.",
+     "Alicia"),
 ]
+
+GOOGLE_REVIEWS_URL = "https://www.google.com/maps?cid=12542257598963737778"
 
 
 def testimonials():
     out = []
-    for text, name, suburb in TESTIMONIALS:
+    for text, name in TESTIMONIALS:
         out.append(f"""<figure class="quote">
         {STARS}
-        <p>&ldquo;{text}&rdquo;</p>
-        <cite>{name}<span>{suburb}</span></cite>
+        <blockquote>&ldquo;{text}&rdquo;</blockquote>
+        <figcaption><cite>{name}</cite><span>Google review</span></figcaption>
       </figure>""")
     return '<div class="quotes">%s</div>' % "".join(out)
 
@@ -609,7 +805,7 @@ def local_business_schema():
   "priceRange": "$$",
   "currenciesAccepted": "AUD",
   "paymentAccepted": "Cash, Bank transfer, Card",
-  "image": "{img('og') if not USE_LOCAL_IMAGES else SITE + '/assets/img/og.png'}",
+  "image": "{SITE + img('og')}",
   "address": {{
     "@type": "PostalAddress",
     "streetAddress": "{BIZ['street']}",
@@ -619,7 +815,12 @@ def local_business_schema():
     "addressCountry": "{BIZ['country']}"
   }},
   "geo": {{"@type":"GeoCoordinates","latitude":{BIZ['lat']},"longitude":{BIZ['lng']}}},
-  "hasMap": "https://www.google.com/maps/place/Greenline+services",
+  "hasMap": "https://www.google.com/maps?cid=12542257598963737778",
+  "sameAs": [
+    "{BIZ['facebook']}",
+    "{BIZ['instagram']}",
+    "https://www.google.com/maps?cid=12542257598963737778"
+  ],
   "openingHoursSpecification": [
     {{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"07:00","closes":"17:00"}},
     {{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday"],"opens":"08:00","closes":"14:00"}}
@@ -725,15 +926,13 @@ HOME_TRAIL = [("Home", "/")]
 
 def page_home():
     return f"""{crumbs([]) if False else ''}<section class="hero">
-  <div class="hero-media" aria-hidden="true">{picture('hero', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
+  <div class="hero-media" aria-hidden="true">{picture('hero', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     <span class="eyebrow">Frankston &amp; the Mornington Peninsula</span>
     <h1>Lawn Mowing &amp; Garden Maintenance in <em>Frankston</em></h1>
-    <p class="hero-sub">Greenline Services is a local lawn and garden crew based on St Johns Ave. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
+    <p class="hero-sub">Prestige Property Care is a local lawn and garden crew based in Frankston. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Get a free quote</a>
+      <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
     <div class="hero-strip">
       <div>{svg('check')}Frankston based, locally owned</div>
@@ -780,14 +979,14 @@ def page_home():
       <div class="prose">
         <span class="eyebrow">Local lawn care</span>
         <h2>Straight answers, a fixed price, and the same person each time</h2>
-        <p><strong>Greenline Services provides lawn mowing in Frankston, Victoria, along with garden maintenance, hedge trimming, gutter cleaning and green waste removal, from a base at 2/15 St Johns Ave, Frankston VIC 3199.</strong> We cover 18 suburbs across the Frankston City area and the Mornington Peninsula, on both one-off visits and regular weekly, fortnightly or monthly rounds.</p>
+        <p><strong>Prestige Property Care provides lawn mowing in Frankston, Victoria, along with garden maintenance, hedge trimming, gutter cleaning and green waste removal, from a base in Frankston VIC 3199.</strong> We cover 18 suburbs across the Frankston City area and the Mornington Peninsula, on both one-off visits and regular weekly, fortnightly or monthly rounds.</p>
         <p>Most people calling about lawn mowing in Frankston have one of two problems. Either the lawn has quietly got away from them over a wet fortnight, or they have been let down by someone who stopped turning up. Both are fixable. We quote the property before we start, we give you a day, and we keep to it.</p>
         <p>Every visit finishes the same way: lawn cut and caught, edges cut sharp along the paths and drives, paths blown clean, and the clippings on the trailer and gone. Nothing is left in a pile by the bin for you to sort out later.</p>
         <div class="callout">
           <p><strong>Not sure what you need?</strong> Call {BIZ['phone_display']} and describe the property. We will tell you what the job actually needs &mdash; and if it is not something we do, we will say so rather than quote you for it.</p>
         </div>
       </div>
-      <div class="split-media">{picture('lawn-mowing')}</div>
+      <div class="split-media">{picture('lawn-mowing', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -797,9 +996,9 @@ def page_home():
   <div class="stripes" aria-hidden="true"></div>
   <div class="wrap" style="position:relative;z-index:2">
     <div class="sec-head">
-      <span class="eyebrow">About Greenline</span>
+      <span class="eyebrow">About Prestige</span>
       <h2>Local, and it shows in the work</h2>
-      <p class="lede">Greenline Services is run by {BIZ['owner']} out of Frankston. You deal with the person doing the job, not a call centre and not a rotating roster of subcontractors.</p>
+      <p class="lede">Prestige Property Care is run by {BIZ['owner']} out of Frankston. You deal with the person doing the job, not a call centre and not a rotating roster of subcontractors.</p>
     </div>
     <div class="why-grid">
       <div class="why-item">
@@ -820,7 +1019,7 @@ def page_home():
       </div>
     </div>
     <div class="hero-cta" style="margin-top:44px;margin-bottom:0">
-      <a href="/about/" class="btn-lg btn-ghost">More about Greenline {svg('arrow')}</a>
+      <a href="/about/" class="btn-lg btn-ghost">More about Prestige {svg('arrow')}</a>
     </div>
   </div>
 </section>
@@ -847,9 +1046,9 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">Our recent work</span>
       <h2>Jobs from around Frankston and the Peninsula</h2>
-      <p class="lede">A sample of the properties we look after week to week &mdash; regular mowing rounds, coastal gardens and gutter cleans booked ahead of storm season.</p>
+      <p class="lede">Real properties, photographed on the day. Drag the handle across each one to see what the yard looked like when we arrived and what we left behind.</p>
     </div>
-    {work_gallery()}
+    {before_after_slider()}
   </div>
 </section>
 
@@ -859,6 +1058,7 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">What clients say</span>
       <h2>Booked again, and again</h2>
+      <p class="lede">Reviews left on our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google Business Profile</a>, quoted word for word.</p>
     </div>
     {testimonials()}
   </div>
@@ -870,10 +1070,10 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">Where we work</span>
       <h2>Serving Frankston and the Mornington Peninsula</h2>
-      <p class="lede">We cover lawn mowing in Frankston and every other service on this page across 18 suburbs, working out of St Johns Ave. If yours is on the list, we can usually get to you within the week.</p>
+      <p class="lede">We cover lawn mowing in Frankston and every other service on this page across 18 suburbs, working out of Frankston. If yours is on the list, we can usually get to you within the week.</p>
     </div>
     {areas_grid()}
-    {map_embed('Greenline Services service area map — Frankston VIC and the Mornington Peninsula')}
+    {map_embed('Prestige Property Care service area map — Frankston VIC and the Mornington Peninsula')}
   </div>
 </section>
 
@@ -917,16 +1117,14 @@ def page_service(sp):
         % (p[0], p[1], "".join("<li>%s</li>" % li for li in p[2]))
         for p in sp["panels"])
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture(s['img'], eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
+  <div class="hero-media" aria-hidden="true">{picture(s['img'], eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">{sp['eyebrow']}</span>
     <h1>{sp['h1']}</h1>
     <p class="hero-sub">{sp['sub']}</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="#quote" class="btn-lg btn-ghost">Get a free quote</a>
+      <a href="#quote" class="btn-lg btn-solid">Get a free quote</a>
     </div>
   </div>
 </section>
@@ -993,7 +1191,7 @@ def page_service(sp):
 <section class="sec">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">Also from Greenline</span>
+      <span class="eyebrow">Also from Prestige</span>
       <h2>Other services we bring on the same visit</h2>
       <p class="lede">Most jobs get booked together. If we are already on site, adding another task rarely costs a second trip.</p>
     </div>
@@ -1011,14 +1209,14 @@ SERVICE_PAGES = [
 {
  "slug": "gutter-cleaning",
  "crumb": "Gutter Cleaning",
- "title": "Gutter Cleaning Frankston | Greenline Services",
- "desc": "Gutter cleaning in Frankston by Greenline Services. Gutters and downpipes cleared by hand, all debris taken away. Free quotes across the Peninsula.",
+ "title": "Gutter Cleaning Frankston | Prestige Property Care",
+ "desc": "Gutter cleaning in Frankston by Prestige Property Care. Gutters and downpipes cleared by hand, all debris taken away. Free quotes across the Peninsula.",
  "keyword": "gutter cleaning frankston",
  "eyebrow": "Gutter cleaning",
  "h1": "Gutter Cleaning in Frankston &amp; Surrounding Suburbs",
  "sub": "Gutters and downpipes cleared by hand, every bit of debris bagged and taken with us. Booked most often before storm season and after the autumn leaf drop.",
  "preselect": "Gutter cleaning",
- "answer": "Gutter cleaning in Frankston costs less than the eaves repair it prevents. Greenline Services clears gutters and downpipes by hand across Frankston, Seaford, Carrum Downs, Langwarrin and the Mornington Peninsula, removes all debris from the property, and quotes a fixed price before starting.",
+ "answer": "Gutter cleaning in Frankston costs less than the eaves repair it prevents. Prestige Property Care clears gutters and downpipes by hand across Frankston, Seaford, Carrum Downs, Langwarrin and the Mornington Peninsula, removes all debris from the property, and quotes a fixed price before starting.",
  "body": """
 <h2>Why gutter cleaning in Frankston matters more than it does most places</h2>
 <p>Frankston sits under a lot of gum. Between the leaf drop and the bark, a gutter that looked fine in February can be packed solid by May. Once it is full, water does not go down the downpipe &mdash; it goes over the lip, into the eaves, and then into the wall cavity or the ceiling. That is a plaster and timber job, and it costs many times what a <strong>gutter cleaning</strong> visit does.</p>
@@ -1062,14 +1260,14 @@ SERVICE_PAGES = [
 {
  "slug": "rubbish-removal",
  "crumb": "Green Waste &amp; Rubbish Removal",
- "title": "Rubbish Removal Frankston | Greenline Services",
- "desc": "Rubbish removal in Frankston from Greenline Services. Green waste, clippings, old timber and household junk loaded and taken away. Free quotes.",
+ "title": "Rubbish Removal Frankston | Prestige Property Care",
+ "desc": "Rubbish removal in Frankston from Prestige Property Care. Green waste, clippings, old timber and household junk loaded and taken away. Free quotes.",
  "keyword": "rubbish removal frankston",
  "eyebrow": "Green waste &amp; rubbish removal",
  "h1": "Green Waste &amp; Rubbish Removal in Frankston",
  "sub": "Clippings, prunings, old timber and general household junk loaded onto the trailer and taken away the same day. No waiting months for a council hard waste booking.",
  "preselect": "rubbish removal",
- "answer": "Rubbish removal in Frankston through Greenline Services means we load it and it leaves the same day. We take green waste, garden clippings, prunings, old timber and general household junk from properties across Frankston, Carrum Downs, Skye, Seaford and the Mornington Peninsula, for a fixed price quoted before we start.",
+ "answer": "Rubbish removal in Frankston through Prestige Property Care means we load it and it leaves the same day. We take green waste, garden clippings, prunings, old timber and general household junk from properties across Frankston, Carrum Downs, Skye, Seaford and the Mornington Peninsula, for a fixed price quoted before we start.",
  "body": """
 <h2>Rubbish removal in Frankston, without waiting on the council</h2>
 <p>Frankston City runs a hard waste service, and for some things it is the right answer. But it is booked out, it has rules about what goes on the nature strip, and it will not touch most garden waste at all. If you have a trailer load of hedge clippings, a dismantled deck or a garage that has not been emptied since you moved in, waiting is not much of a plan.</p>
@@ -1113,14 +1311,14 @@ SERVICE_PAGES = [
 {
  "slug": "garden-maintenance",
  "crumb": "Garden Maintenance",
- "title": "Gardener Frankston | Garden Maintenance | Greenline",
- "desc": "Need a gardener in Frankston? Greenline Services covers weeding, mulching, pruning and regular garden maintenance across Frankston and the Peninsula.",
+ "title": "Gardener Frankston | Garden Maintenance | Prestige",
+ "desc": "Need a gardener in Frankston? Prestige Property Care covers weeding, mulching, pruning and regular garden maintenance across Frankston and the Peninsula.",
  "keyword": "gardener frankston",
  "eyebrow": "Garden maintenance",
  "h1": "Your Local Gardener in Frankston &amp; Frankston South",
  "sub": "Weeding, mulching, pruning and general garden upkeep on a schedule that suits the property &mdash; whether you are time-poor, getting older, or managing the place from somewhere else.",
  "preselect": "Garden maintenance",
- "answer": "Greenline Services is a local gardener in Frankston covering weeding, mulching, pruning, bed maintenance and seasonal tidy-ups on regular scheduled visits. We work across Frankston, Frankston South, Karingal, Langwarrin and the Mornington Peninsula, and quote a fixed price per visit rather than charging by the hour.",
+ "answer": "Prestige Property Care is a local gardener in Frankston covering weeding, mulching, pruning, bed maintenance and seasonal tidy-ups on regular scheduled visits. We work across Frankston, Frankston South, Karingal, Langwarrin and the Mornington Peninsula, and quote a fixed price per visit rather than charging by the hour.",
  "body": """
 <h2>What a regular gardener in Frankston actually does</h2>
 <p>Mowing keeps the lawn under control. Everything else in a garden &mdash; the beds, the shrubs, the mulch, the weeds coming up through the gravel &mdash; needs a different kind of attention, and it is what most people are really asking for when they go looking for a <strong>gardener</strong> in Frankston.</p>
@@ -1166,14 +1364,14 @@ SERVICE_PAGES += [
 {
  "slug": "lawn-mowing",
  "crumb": "Lawn Mowing",
- "title": "Lawn Mowing Mornington | Greenline Services",
- "desc": "Lawn mowing in Mornington and across the Peninsula. Greenline Services mows, catches and edges on weekly, fortnightly or one-off visits. Free quotes.",
+ "title": "Lawn Mowing Mornington | Prestige Property Care",
+ "desc": "Lawn mowing in Mornington and across the Peninsula. Prestige Property Care mows, catches and edges on weekly, fortnightly or one-off visits. Free quotes.",
  "keyword": "lawn mowing mornington",
  "eyebrow": "Lawn mowing",
  "h1": "Lawn Mowing in Mornington &amp; the Mornington Peninsula",
  "sub": "Mown, caught and edged on every visit. Weekly and fortnightly rounds through Mornington, Mount Eliza, Mount Martha and Moorooduc, plus one-off cuts when a lawn has got away.",
  "preselect": "Lawn mowing",
- "answer": "Lawn mowing in Mornington from Greenline Services includes mowing, catching and edging on every visit, with all clippings taken away. We run weekly, fortnightly and monthly rounds across Mornington, Mount Eliza, Mount Martha, Moorooduc, Somerville and Tyabb, and quote a fixed price per visit.",
+ "answer": "Lawn mowing in Mornington from Prestige Property Care includes mowing, catching and edging on every visit, with all clippings taken away. We run weekly, fortnightly and monthly rounds across Mornington, Mount Eliza, Mount Martha, Moorooduc, Somerville and Tyabb, and quote a fixed price per visit.",
  "body": """
 <h2>Lawn mowing in Mornington is its own kind of job</h2>
 <p>Grass on the Peninsula grows on a different clock to the rest of Melbourne. The coastal humidity through Mornington and Mount Martha pushes couch and kikuyu hard from October onwards, and a lawn that was fine on a fortnightly cycle in September will be shin-deep by late November on the same schedule.</p>
@@ -1218,14 +1416,14 @@ SERVICE_PAGES += [
 {
  "slug": "hedge-trimming",
  "crumb": "Hedge Trimming &amp; Edging",
- "title": "Hedge Trimming Frankston | Greenline Services",
- "desc": "Hedge trimming in Frankston from Greenline Services. Hedges shaped and levelled, lawn edges cut sharp, all clippings taken away. Free quotes.",
+ "title": "Hedge Trimming Frankston | Prestige Property Care",
+ "desc": "Hedge trimming in Frankston from Prestige Property Care. Hedges shaped and levelled, lawn edges cut sharp, all clippings taken away. Free quotes.",
  "keyword": "hedge trimming frankston",
  "eyebrow": "Hedge trimming &amp; edging",
  "h1": "Hedge Trimming &amp; Lawn Edging in Frankston",
  "sub": "Hedges shaped, levelled and brought back into line, and edges cut sharp along every path, drive and garden bed. The two jobs that make a tidy yard look properly finished.",
  "preselect": "Hedge trimming",
- "answer": "Hedge trimming in Frankston from Greenline Services covers shaping, levelling and height reduction on hedges of any size, plus sharp lawn edging along paths, drives and garden beds. All clippings are taken away the same day, and we quote a fixed price across Frankston, Langwarrin, Karingal, Baxter and the Mornington Peninsula.",
+ "answer": "Hedge trimming in Frankston from Prestige Property Care covers shaping, levelling and height reduction on hedges of any size, plus sharp lawn edging along paths, drives and garden beds. All clippings are taken away the same day, and we quote a fixed price across Frankston, Langwarrin, Karingal, Baxter and the Mornington Peninsula.",
  "body": """
 <h2>Hedge trimming in Frankston: shaped, or just a bush</h2>
 <p>Hedges have a habit of creeping. A few centimetres a season on the top and both faces, and after three or four years the thing that was a crisp screen along the fence line is a wall of growth leaning into the path. It happens slowly enough that you stop noticing it.</p>
@@ -1268,14 +1466,14 @@ SERVICE_PAGES += [
 {
  "slug": "garden-clean-ups",
  "crumb": "Garden Clean-Ups",
- "title": "Garden Clean Up Frankston | Greenline Services",
- "desc": "Garden clean up in Frankston for end-of-lease and pre-sale. Greenline brings overgrown yards back to inspection standard and clears all waste.",
+ "title": "Garden Clean Up Frankston | Prestige Property Care",
+ "desc": "Garden clean up in Frankston for end-of-lease and pre-sale. Prestige brings overgrown yards back to inspection standard and clears all waste.",
  "keyword": "garden clean up frankston",
  "eyebrow": "End-of-lease &amp; pre-sale",
  "h1": "End-of-Lease &amp; Pre-Sale Garden Clean-Ups in Frankston",
  "sub": "Overgrown yards brought back to inspection standard, with every bit of waste gone the same day. Booked by renters chasing a bond, landlords between tenants, and agents preparing a home for photos.",
  "preselect": "clean-up",
- "answer": "A garden clean up in Frankston with Greenline Services brings an overgrown yard back to inspection standard in a single visit: lawns cut and edged, beds weeded, hedges shaped, paths cleared and all green waste removed. We work to your inspection or photography date across Frankston, Carrum Downs, Seaford, Mount Eliza and the Mornington Peninsula.",
+ "answer": "A garden clean up in Frankston with Prestige Property Care brings an overgrown yard back to inspection standard in a single visit: lawns cut and edged, beds weeded, hedges shaped, paths cleared and all green waste removed. We work to your inspection or photography date across Frankston, Carrum Downs, Seaford, Mount Eliza and the Mornington Peninsula.",
  "body": """
 <h2>A garden clean up in Frankston usually has a deadline attached</h2>
 <p>Almost every <strong>garden clean up</strong> we do in Frankston is driven by a date. Either there is a final inspection and a bond on the line, or the property is going to market and the photographer is booked for Thursday. Both mean the yard has to go from wherever it is now to presentable, in one visit, by a fixed day.</p>
@@ -1321,8 +1519,8 @@ SERVICE_PAGES += [
 
 # ============================================================ SERVICES HUB
 HUB_FAQS = [
-    ("What services does Greenline Services offer in Frankston?",
-     "Greenline Services offers lawn mowing, lawn edging, garden maintenance, hedge trimming, gutter cleaning, green waste and rubbish removal, end-of-lease and pre-sale garden clean-ups, and general property maintenance for commercial sites and rental portfolios. All of it is available across Frankston and the Mornington Peninsula, and most of it can be booked on a single visit."),
+    ("What services does Prestige Property Care offer in Frankston?",
+     "Prestige Property Care offers lawn mowing, lawn edging, garden maintenance, hedge trimming, gutter cleaning, green waste and rubbish removal, end-of-lease and pre-sale garden clean-ups, and general property maintenance for commercial sites and rental portfolios. All of it is available across Frankston and the Mornington Peninsula, and most of it can be booked on a single visit."),
     ("Can I book more than one service at once?",
      "Yes, and it is usually cheaper. If we are already on site for a mow, adding a hedge trim, a gutter clean or a load of green waste rarely costs a second call-out. One booking, one invoice, one crew that already knows the property."),
     ("Do you do regular visits or only one-off jobs?",
@@ -1334,16 +1532,14 @@ HUB_FAQS = [
 def page_services():
     trail = [("Home", "/"), ("Services", None)]
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture('work-peninsula', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
+  <div class="hero-media" aria-hidden="true">{picture('work-garden', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">All services</span>
     <h1>Lawn Mowing Services in Frankston &amp; Property Care</h1>
-    <p class="hero-sub">Everything Greenline Services does, in one place. Lawn mowing services in Frankston and across the Peninsula, plus gutters, hedges, gardens, green waste and full clean-ups &mdash; bookable together on a single visit.</p>
+    <p class="hero-sub">Everything Prestige Property Care does, in one place. Lawn mowing services in Frankston and across the Peninsula, plus gutters, hedges, gardens, green waste and full clean-ups &mdash; bookable together on a single visit.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Get a free quote</a>
+      <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
   </div>
 </section>
@@ -1379,13 +1575,13 @@ def page_services():
       <div class="prose">
         <span class="eyebrow">Also available</span>
         <h2>Commercial and property maintenance</h2>
-        <p>Alongside the residential work, Greenline Services maintains grounds for commercial sites, body corporate properties and rental portfolios across Frankston and the Mornington Peninsula. That covers scheduled mowing and edging, hedge and garden bed upkeep, gutter cleaning, exterior tidy-ups and waste removal &mdash; run on a set cycle so the presentation never swings between overgrown and freshly cut.</p>
+        <p>Alongside the residential work, Prestige Property Care maintains grounds for commercial sites, body corporate properties and rental portfolios across Frankston and the Mornington Peninsula. That covers scheduled mowing and edging, hedge and garden bed upkeep, gutter cleaning, exterior tidy-ups and waste removal &mdash; run on a set cycle so the presentation never swings between overgrown and freshly cut.</p>
         <p>We also take on general property maintenance: the odd jobs around a site that fall between trades and never quite get booked. If you are not sure whether something is in scope, call and ask. We will tell you plainly if it is not our work.</p>
         <div class="callout">
           <p><strong>Managing more than one property?</strong> Send the addresses and how often each needs attention and we will price the lot together.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-edging')}</div>
+      <div class="split-media">{picture('work-hedge', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1405,7 +1601,7 @@ def page_services():
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Common questions</span>
-      <h2>Booking Greenline</h2>
+      <h2>Booking Prestige</h2>
     </div>
     {faq_block(HUB_FAQS)}
   </div>
@@ -1418,10 +1614,10 @@ def page_services():
 
 # ================================================================== ABOUT
 ABOUT_FAQS = [
-    ("Who is Greenline Services?",
-     "Greenline Services is a lawn, garden and property maintenance business based at 2/15 St Johns Ave, Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
+    ("Who is Prestige Property Care?",
+     "Prestige Property Care is a lawn, garden and property maintenance business based in Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
     ("Are you insured?",
-     "Yes. Greenline Services carries public liability insurance, and we are happy to provide the certificate of currency to property managers, body corporates and commercial clients who need it on file before work starts."),
+     "Yes. Prestige Property Care carries public liability insurance, and we are happy to provide the certificate of currency to property managers, body corporates and commercial clients who need it on file before work starts."),
     ("Do you use subcontractors?",
      "No. The person who quotes your property is the person who does the work. That is the main reason clients stay with us &mdash; nobody has to be re-briefed on where the gate key is or which garden bed is not to be touched."),
     ("What areas do you cover?",
@@ -1433,16 +1629,14 @@ ABOUT_FAQS = [
 def page_about():
     trail = [("Home", "/"), ("About", None)]
     return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture('about-dave', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
+  <div class="hero-media" aria-hidden="true">{picture('about-dave', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">About us</span>
-    <h1>About Greenline Services, Frankston</h1>
-    <p class="hero-sub">A local lawn and garden business run out of St Johns Ave by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
+    <h1>About Prestige Property Care, Frankston</h1>
+    <p class="hero-sub">A local lawn and garden business run out of Frankston by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/contact/" class="btn-lg btn-ghost">Get a free quote</a>
+      <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
   </div>
 </section>
@@ -1467,14 +1661,14 @@ def page_about():
       <div class="prose">
         <span class="eyebrow">Our story</span>
         <h2>One person, one trailer, and a round that kept growing</h2>
-        <p><strong>Greenline Services is a lawn, garden and property maintenance business operating from 2/15 St Johns Ave, Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
+        <p><strong>Prestige Property Care is a lawn, garden and property maintenance business operating from Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
         <p>The business grew the way these ones tend to: one property, then the neighbour, then their sister in Seaford. Nearly all of it came from people telling someone else that we turned up when we said we would. That is not a marketing line, it is just what happens in this trade when most operators do not.</p>
         <p>What has not changed as the round has grown is who does the work. There are no subcontractors and no rotating crews. The person who quotes your property is the person standing in it on the day, which is why nobody ever has to be told twice about the side gate, the dog, or the bed of natives that is not to be trimmed.</p>
         <h2>How we price</h2>
         <p>Fixed quotes, given free after we have seen the property. Not an hourly rate. An hourly rate rewards working slowly and leaves you watching the clock from the kitchen window, which is a strange way to run a relationship with someone who is at your house every fortnight.</p>
         <p>If a job turns out to be bigger than it looked, we tell you before we start rather than after we finish. And if what you actually need is not something we do, we say so &mdash; you are better off with the right trade than with us having a go at it.</p>
       </div>
-      <div class="split-media tall">{picture('garden-maintenance')}</div>
+      <div class="split-media tall">{picture('garden-maintenance', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1511,6 +1705,7 @@ def page_about():
     <div class="sec-head">
       <span class="eyebrow">What clients say</span>
       <h2>The reason the round keeps growing</h2>
+      <p class="lede">Straight from our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google reviews</a>.</p>
     </div>
     {testimonials()}
   </div>
@@ -1523,11 +1718,11 @@ def page_about():
         <div class="sec-head" style="margin-bottom:26px">
           <span class="eyebrow">Find us</span>
           <h2>Based in Frankston</h2>
-          <p class="lede">We work out of St Johns Ave, Frankston, and cover 18 suburbs across the Frankston City area and the Mornington Peninsula.</p>
+          <p class="lede">We are based in Frankston and cover 18 suburbs across the Frankston City area and the Mornington Peninsula.</p>
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
+      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1536,7 +1731,7 @@ def page_about():
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Common questions</span>
-      <h2>About Greenline</h2>
+      <h2>About Prestige</h2>
     </div>
     {faq_block(ABOUT_FAQS)}
   </div>
@@ -1549,8 +1744,8 @@ def page_about():
 
 # ================================================================ CONTACT
 CONTACT_FAQS = [
-    ("How do I get a quote from Greenline Services?",
-     "Call 0494 154 184, email davidcoelho92@hotmail.com, or send the form on this page with your suburb and what you need looked at. Quotes are free, given as a fixed price rather than an hourly rate, and there is no obligation to book once you have the number."),
+    ("How do I get a quote from Prestige Property Care?",
+     "Call 0466 687 252, email dave@prestigepropertycare.com.au, or send the form on this page with your suburb and what you need looked at. Quotes are free, given as a fixed price rather than an hourly rate, and there is no obligation to book once you have the number."),
     ("How quickly do you respond?",
      "Calls are the fastest way to get an answer and are usually picked up or returned the same day. Form and email enquiries are answered within one business day. If you have a hard deadline &mdash; an inspection, a photography date, a storm on the way &mdash; say so and we will prioritise it."),
     ("What are your hours?",
@@ -1563,17 +1758,25 @@ CONTACT_FAQS = [
 
 def page_contact():
     trail = [("Home", "/"), ("Contact", None)]
-    return f"""<section class="page-hero">
-  <div class="hero-media" aria-hidden="true">{picture('work-edging', eager=True)}</div>
-  <div class="stripes" aria-hidden="true"></div>
+    return f"""<section class="page-hero hero-form">
+  <div class="hero-media" aria-hidden="true">{picture('work-lawn', eager=True, sizes='100vw')}</div>
   <div class="hero-in">
-    {crumbs(trail)}
-    <span class="eyebrow">Get in touch</span>
-    <h1>Contact Greenline Services &mdash; Free Quotes in Frankston</h1>
-    <p class="hero-sub">Call for the fastest answer, or send the form and we will come back to you with a fixed price. No call-out fee, no obligation.</p>
-    <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="mailto:{BIZ['email']}" class="btn-lg btn-ghost">{svg('mail')} Email us</a>
+    <div class="hero-split">
+      <div class="hero-copy">
+        {crumbs(trail)}
+        <span class="eyebrow">Get in touch</span>
+        <h1>Contact Prestige Property Care &mdash; Free Quotes in Frankston</h1>
+        <p class="hero-sub">Fill in the form and we will come back to you with a fixed price, usually the same day. No call-out fee, no obligation.</p>
+        <div class="hero-cta">
+          <a href="mailto:{BIZ['email']}" class="btn-lg btn-ghost">{svg('mail')} Email us</a>
+        </div>
+        <div class="hero-strip">
+          <div>{svg('check')}Free quotes</div>
+          <div>{svg('check')}No call-out fee</div>
+          <div>{svg('check')}Same-day phone answers</div>
+        </div>
+      </div>
+      <div id="quote">{quote_form(heading='Request a free quote')}</div>
     </div>
   </div>
 </section>
@@ -1581,10 +1784,10 @@ def page_contact():
 <div class="trustbar">
   <div class="wrap">
     <ul>
-      <li>{svg('check')}Free quotes</li>
-      <li>{svg('check')}No call-out fee</li>
-      <li>{svg('check')}Same-day phone answers</li>
       <li>{svg('check')}Mon&ndash;Fri 7am&ndash;5pm, Sat 8am&ndash;2pm</li>
+      <li>{svg('check')}Fixed prices, not hourly rates</li>
+      <li>{svg('check')}18 suburbs across Frankston &amp; the Peninsula</li>
+      <li>{svg('check')}Residential &amp; commercial</li>
     </ul>
   </div>
 </div>
@@ -1593,35 +1796,24 @@ def page_contact():
 
 <section class="sec">
   <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Request a quote</span>
-      <h2>Tell us about the property</h2>
-      <p class="lede">The more detail you give &mdash; rough yard size, how long since it was last done, access notes &mdash; the closer the first number will be. If it is urgent, call rather than emailing.</p>
-    </div>
     <div class="contact-grid">
       <div>
+        <div class="sec-head" style="margin-bottom:26px">
+          <span class="eyebrow">Our details</span>
+          <h2>Based in Frankston VIC 3199</h2>
+          <p class="lede">We are based in Frankston and work across the Frankston City suburbs and the Mornington Peninsula &mdash; from Seaford and Carrum Downs through to Mornington, Mount Martha and Tyabb.</p>
+        </div>
         {nap_list()}
         <div class="callout" style="margin-top:28px">
           <p><strong>Got a deadline?</strong> End-of-lease inspections and pre-sale photography dates get priority. Tell us the date when you call and we will work backwards from it.</p>
         </div>
       </div>
-      {quote_form()}
+      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
 
 <section class="sec sec-alt">
-  <div class="wrap">
-    <div class="sec-head">
-      <span class="eyebrow">Find us</span>
-      <h2>2/15 St Johns Ave, Frankston VIC 3199</h2>
-      <p class="lede">We are based in Frankston and work across the Frankston City suburbs and the Mornington Peninsula &mdash; from Seaford and Carrum Downs through to Mornington, Mount Martha and Tyabb.</p>
-    </div>
-    {map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}
-  </div>
-</section>
-
-<section class="sec">
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Where we work</span>
@@ -1631,7 +1823,7 @@ def page_contact():
   </div>
 </section>
 
-<section class="sec sec-alt">
+<section class="sec">
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Common questions</span>
@@ -1646,7 +1838,6 @@ def page_contact():
 {cta_band('Call and get a number today', 'Free fixed-price quotes on lawn mowing, gutters, hedges, gardens and clean-ups across Frankston and the Peninsula.')}"""
 
 
-# ================================================================== BUILD
 def build_pages():
     pages = []
 
@@ -1655,9 +1846,9 @@ def build_pages():
         "path": "/",
         "file": "index.html",
         "active": "home",
-        "title": "Lawn Mowing Frankston | Garden Care | Greenline Services",
-        "desc": "Lawn mowing in Frankston from Greenline Services. Local lawn care, garden maintenance, hedge trimming and gutter cleaning across the Mornington Peninsula.",
-        "body": page_home(),
+        "title": "Lawn Mowing Frankston | Garden Care | Prestige Property Care",
+        "desc": "Lawn mowing in Frankston from Prestige Property Care. Local lawn care, garden maintenance, hedge trimming and gutter cleaning across the Mornington Peninsula.",
+        "body": page_home(), "lcp": "hero",
         "schema": [local_business_schema(), website_schema(),
                    faq_schema(HOME_FAQS), breadcrumb_schema([("Home", "/")])],
         "priority": "1.0",
@@ -1668,9 +1859,9 @@ def build_pages():
         "path": "/services/",
         "file": "services/index.html",
         "active": "services",
-        "title": "Lawn Mowing Services Frankston | All Services | Greenline",
-        "desc": "All Greenline Services lawn mowing services in Frankston: mowing, gutter cleaning, garden maintenance, hedge trimming, rubbish removal and garden clean-ups.",
-        "body": page_services(),
+        "title": "Lawn Mowing Services Frankston | All Services | Prestige",
+        "desc": "All Prestige Property Care lawn mowing services in Frankston: mowing, gutter cleaning, garden maintenance, hedge trimming, rubbish removal and garden clean-ups.",
+        "body": page_services(), "lcp": "work-garden",
         "schema": [faq_schema(HUB_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Services", "/services/")])],
         "priority": "0.9",
@@ -1685,7 +1876,7 @@ def build_pages():
             "active": "services",
             "title": sp["title"],
             "desc": sp["desc"],
-            "body": page_service(sp),
+            "body": page_service(sp), "lcp": sp["slug"],
             "schema": [
                 service_schema(strip_tags(sp["h1"]), sp["desc"], path,
                                strip_tags(sp["crumb"])),
@@ -1701,10 +1892,11 @@ def build_pages():
         "path": "/about/",
         "file": "about/index.html",
         "active": "about",
-        "title": "About Greenline Services | Lawn &amp; Garden Care Frankston",
-        "desc": "Greenline Services is a Frankston lawn and garden business run by Dave Coelho. Same crew every visit, fixed quotes, all waste taken away. Serving 18 suburbs.",
-        "body": page_about(),
-        "schema": [faq_schema(ABOUT_FAQS),
+        "title": "About Prestige Property Care | Lawn &amp; Garden Care Frankston",
+        "desc": "Prestige Property Care is a Frankston lawn and garden business run by Dave Coelho. Same crew every visit, fixed quotes, waste taken away. Serving 18 suburbs.",
+        "body": page_about(), "lcp": "about-dave",
+        "schema": [local_business_schema(),
+                   faq_schema(ABOUT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("About", "/about/")]),
                    about_page_schema()],
         "priority": "0.7",
@@ -1715,10 +1907,11 @@ def build_pages():
         "path": "/contact/",
         "file": "contact/index.html",
         "active": "contact",
-        "title": "Contact Greenline Services | Free Quote Frankston VIC",
-        "desc": "Contact Greenline Services in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0494 154 184 or send the quote form.",
-        "body": page_contact(),
-        "schema": [faq_schema(CONTACT_FAQS),
+        "title": "Contact Prestige Property Care | Free Quote Frankston VIC",
+        "desc": "Contact Prestige Property Care in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0466 687 252 or send the quote form.",
+        "body": page_contact(), "modal": False, "lcp": "work-lawn",
+        "schema": [local_business_schema(),
+                   faq_schema(CONTACT_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Contact", "/contact/")]),
                    contact_page_schema()],
         "priority": "0.7",
@@ -1732,7 +1925,7 @@ def about_page_schema():
   "@context": "https://schema.org",
   "@type": "AboutPage",
   "url": "{SITE}/about/",
-  "name": "About Greenline Services",
+  "name": "About Prestige Property Care",
   "mainEntity": {{"@id": "{SITE}/#business"}}
 }}"""
 
@@ -1742,21 +1935,19 @@ def contact_page_schema():
   "@context": "https://schema.org",
   "@type": "ContactPage",
   "url": "{SITE}/contact/",
-  "name": "Contact Greenline Services",
+  "name": "Contact Prestige Property Care",
   "mainEntity": {{"@id": "{SITE}/#business"}}
 }}"""
 
 
 def page_thanks():
     return f"""<section class="page-hero">
-  <div class="stripes" aria-hidden="true"></div>
   <div class="hero-in">
     <span class="eyebrow">Request received</span>
     <h1>Thanks &mdash; we&rsquo;ve got your details</h1>
-    <p class="hero-sub">Your quote request has come through to Greenline Services. {BIZ['owner']} will get back to you with a fixed price, usually the same day and always within one business day.</p>
+    <p class="hero-sub">Your quote request has come through to Prestige Property Care. {BIZ['owner']} will get back to you with a fixed price, usually the same day and always within one business day.</p>
     <div class="hero-cta">
-      <a href="tel:{BIZ['phone_link']}" class="btn-lg btn-solid">{svg('phone')} Call {BIZ['phone_display']}</a>
-      <a href="/" class="btn-lg btn-ghost">Back to the homepage</a>
+      <a href="/" class="btn-lg btn-solid">Back to the homepage</a>
     </div>
   </div>
 </section>
@@ -1788,7 +1979,7 @@ def page_thanks():
           <p><strong>In a hurry?</strong> If you have an inspection date, a photography booking or a storm on the way, call {BIZ['phone_display']} rather than waiting on the email. We prioritise jobs with a hard deadline.</p>
         </div>
       </div>
-      <div class="split-media">{picture('work-peninsula')}</div>
+      <div class="split-media">{picture('work-hedge', sizes=SPLIT_SIZES)}</div>
     </div>
   </div>
 </section>
@@ -1810,11 +2001,11 @@ def page_thanks():
       <div>
         <div class="sec-head" style="margin-bottom:26px">
           <span class="eyebrow">Our details</span>
-          <h2>Greenline Services, Frankston</h2>
+          <h2>Prestige Property Care, Frankston</h2>
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Greenline Services — 2/15 St Johns Ave, Frankston VIC 3199 on Google Maps')}</div>
+      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1824,13 +2015,18 @@ def page_thanks():
 
 
 BANNER = ("<!-- Generated by tools/build.py — edit the content there, not here. "
-          "Greenline Services, Frankston VIC. -->\n")
+          "Prestige Property Care, Frankston VIC. -->\n")
 
 
 def render(page):
+    has_modal = page.get("modal", True)
+    # Every page used to open <main> partway down, leaving the hero, trust bar
+    # and CTA band outside any landmark. Wrap the whole body once instead.
+    body = page["body"].replace('<main id="main">', "").replace("</main>", "")
+    body = '<main id="main">\n' + body + "\n</main>\n"
     out = [head(page), BANNER,
-           site_header(page["active"], solid=page["path"] != "/"),
-           page["body"], site_footer()]
+           site_header(page["active"], solid=page["path"] != "/", modal_cta=has_modal),
+           body, site_footer(with_modal=has_modal)]
     doc = "".join(out)
     # schema goes just before </body>
     schema = "".join(jsonld(s) for s in page["schema"])
@@ -1893,6 +2089,30 @@ NOT_FOUND_BODY = """<section class="page-hero">
 </main>""" % service_cards()
 
 
+def minify_css(css):
+    """Conservative CSS minification.
+
+    Deliberately leaves spaces around + and - alone: this stylesheet uses
+    calc(100% - var(--pos)) and calc(var(--header-h) + 24px), and stripping
+    those spaces silently breaks both.
+    """
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)      # comments
+    css = re.sub(r"\s+", " ", css)                        # collapse whitespace
+    css = re.sub(r"\s*([{};,])\s*", r"\1", css)           # around delimiters
+    css = re.sub(r";\}", "}", css)                        # trailing semicolons
+    css = re.sub(r"\s*:\s*", ":", css)                    # after property names
+    return css.strip()
+
+
+def build_css():
+    src = os.path.join(ROOT, "assets", "css", "site.css")
+    with open(src, encoding="utf-8") as fh:
+        raw = fh.read()
+    out = minify_css(raw)
+    write("assets/css/site.min.css", out)
+    return len(raw), len(out)
+
+
 def write(rel_path, content):
     full = os.path.join(ROOT, rel_path)
     os.makedirs(os.path.dirname(full), exist_ok=True)
@@ -1902,20 +2122,22 @@ def write(rel_path, content):
 
 
 def main():
+    raw, mini = build_css()
+    print("css %d -> %d bytes (%d%% smaller)" % (raw, mini, 100 - mini * 100 // raw))
     pages = build_pages()
     written = []
     for p in pages:
         written.append(write(p["file"], render(p)))
 
     written.append(write("thank-you/index.html", render({
-        "path": "/thank-you/", "active": "", "title": "Thank You | Greenline Services Frankston",
-        "desc": "Thanks for your quote request. Greenline Services will come back to you with a fixed price, usually the same day and always within one business day.",
+        "path": "/thank-you/", "active": "", "title": "Thank You | Prestige Property Care Frankston",
+        "desc": "Thanks for your quote request. Prestige Property Care will come back to you with a fixed price, usually the same day and always within one business day.",
         "body": page_thanks(), "schema": [], "robots": "noindex, follow",
     })))
 
     written.append(write("404.html", render({
-        "path": "/404.html", "active": "", "title": "Page not found | Greenline Services",
-        "desc": "The page you were looking for does not exist. Browse Greenline Services lawn and garden services in Frankston, or get in touch for a free quote.",
+        "path": "/404.html", "active": "", "title": "Page not found | Prestige Property Care",
+        "desc": "The page you were looking for does not exist. Browse Prestige Property Care lawn and garden services in Frankston, or get in touch for a free quote.",
         "body": NOT_FOUND_BODY, "schema": [], "robots": "noindex, follow",
     })))
     written.append(write("sitemap.xml", sitemap(pages)))

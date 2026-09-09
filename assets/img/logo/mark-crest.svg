@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Prestige Property Care">
+  <title>Prestige Property Care</title>
+  <defs>
+    <clipPath id="crest">
+      <path d="M14 6h36a6 6 0 0 1 6 6v20c0 12.5-9.8 19.7-24 26C17.8 51.7 8 44.5 8 32V12a6 6 0 0 1 6-6Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#crest)">
+    <rect width="64" height="64" fill="#19551D"/>
+    <g transform="rotate(-20 32 32)">
+      <rect x="-24" y="4" width="112" height="8" fill="#6FB93A"/>
+      <rect x="-24" y="26" width="112" height="8" fill="#6FB93A"/>
+      <rect x="-24" y="48" width="112" height="8" fill="#6FB93A"/>
+    </g>
+  </g>
+</svg>
