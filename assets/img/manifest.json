@@ -269,7 +269,7 @@
  },
  "lawn-mowing": {
   "file": "lawn-mowing.jpg",
-  "h": 1200,
+  "h": 978,
   "srcset": [
    [
     480,
@@ -284,45 +284,11 @@
     "lawn-mowing-1200.jpg"
    ],
    [
-    1600,
+    1304,
     "lawn-mowing.jpg"
    ]
   ],
-  "w": 1600
- },
- "logo-lockup": {
-  "file": "logo-lockup.png",
-  "h": 629,
-  "srcset": [
-   [
-    480,
-    "logo-lockup-480.png"
-   ],
-   [
-    800,
-    "logo-lockup-800.png"
-   ],
-   [
-    911,
-    "logo-lockup.png"
-   ]
-  ],
-  "w": 911
- },
- "logo-mark": {
-  "file": "logo-mark.png",
-  "h": 512,
-  "srcset": [
-   [
-    480,
-    "logo-mark-480.png"
-   ],
-   [
-    512,
-    "logo-mark.png"
-   ]
-  ],
-  "w": 512
+  "w": 1304
  },
  "og": {
   "file": "og.jpg",

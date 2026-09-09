@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Greenline Services — static site generator.
+Prestige Property Care — static site generator.
 
 Builds every page in the site from the shared chrome + per-page content below,
 so navigation, schema, canonicals and metadata can never drift between pages.
@@ -19,13 +19,13 @@ import json
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ---------------------------------------------------------------- business data
-SITE = "https://greenlineservices.com.au"
+SITE = "https://prestigepropertycare.com.au"
 
 # Only the weights the stylesheet actually uses: Fraunces 600/700/900, Karla 400-700.
 FONT_HREF = ("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,900"
              "&family=Karla:wght@400;500;600;700&display=swap")
 BIZ = {
-    "name": "Greenline Services",
+    "name": "Prestige Property Care",
     # The street address is deliberately NOT shown anywhere on the pages. It
     # lives only in the LocalBusiness JSON-LD below, which is the legitimate
     # machine-readable channel — hiding text in the markup to feed crawlers
@@ -37,14 +37,25 @@ BIZ = {
     "region": "VIC",
     "postcode": "3199",
     "country": "AU",
-    "phone_display": "0494 154 184",
-    "phone_link": "+61494154184",
-    "phone_intl": "+61 494 154 184",
-    "email": "davidcoelho92@hotmail.com",
+    "phone_display": "0466 687 252",
+    "phone_link": "+61466687252",
+    "phone_intl": "+61 466 687 252",
+    # The amendment sheet wrote this as "Dave@prestgiepropertycare.com.au".
+    # prestgiepropertycare.com.au does not resolve and prestigepropertycare.com.au
+    # does, so the transposed spelling is treated as a typo. If the mailbox really
+    # is on the misspelt domain, change this one line and rebuild.
+    "email": "dave@prestigepropertycare.com.au",
     "owner": "Dave Coelho",
     "lat": -38.1442,
     "lng": 145.1281,
+    "facebook": "https://www.facebook.com/profile.php?id=61594050001979",
+    "instagram": "https://www.instagram.com/prestigepropertycarefrankston/",
 }
+
+# The logo mark. Three alternatives live in assets/img/logo/ (mark-crest.svg,
+# mark-pleaf.svg, mark-level.svg) — switching the brand over is this one line
+# plus a re-run of tools/gen-icons.py to redraw the favicon and app icons.
+LOGO_MARK = "/assets/img/logo/mark-crest.svg"
 
 SUBURBS = [
     "Frankston", "Frankston South", "Frankston North", "Seaford", "Langwarrin",
@@ -118,9 +129,9 @@ IMG_FILES = {
 # Alt text describes what is actually in each frame — keyword-relevant, but
 # never claiming more than the photo shows.
 IMG_ALT = {
-    "hero": "Freshly mown back lawn with stepping stones and clipped garden beds at a Frankston home maintained by Greenline Services",
-    "lawn-mowing": "Front lawn mown and edged along the footpath and driveway on a Mornington Peninsula property",
-    "gutter-cleaning": "Roof gutter in Frankston packed with gum leaves and bark before a Greenline Services gutter clean",
+    "hero": "Freshly mown back lawn with stepping stones and clipped garden beds at a Frankston home maintained by Prestige Property Care",
+    "lawn-mowing": "Freshly mown back lawn edged along the concrete path, with planted garden beds behind, on a Mornington Peninsula property",
+    "gutter-cleaning": "Roof gutter in Frankston packed with gum leaves and bark before a Prestige Property Care gutter clean",
     "garden-maintenance": "Garden bed remulched and re-edged beside a mown lawn during a regular garden maintenance visit in Frankston",
     "hedge-trimming": "Large hedge cut square and level on every face after hedge trimming in Frankston",
     "rubbish-removal": "Backyard cleared back to bare ground in Frankston, with all green waste and rubbish taken away",
@@ -129,10 +140,10 @@ IMG_ALT = {
     "work-lawn": "Sloping back lawn mown and edged with the garden beds cut clean around it",
     "work-hedge": "Shaped topiary hedging along a pool surround, cut square and level",
     "work-garden": "Maintained back garden with a mown lawn, edged beds and the paths blown clean",
-    "og": "Greenline Services — lawn mowing, hedge trimming and garden maintenance in Frankston and the Mornington Peninsula",
+    "og": "Prestige Property Care — lawn mowing, hedge trimming and garden maintenance in Frankston and the Mornington Peninsula",
     "ba1-before": "Overgrown Frankston backyard before a clean-up, with knee-high grass and dumped sheeting against the fence",
     "ba1-after": "The same Frankston backyard after the clean-up, mown flat with the paving cleared and the waste gone",
-    "ba2-before": "Patchy, overgrown back lawn around a timber deck before a Greenline Services visit",
+    "ba2-before": "Patchy, overgrown back lawn around a timber deck before a Prestige Property Care visit",
     "ba2-after": "The same back lawn mown even and edged along the garden beds after the visit",
     "ba3-before": "Garden bed overgrown and spilling across brick paving before a garden maintenance visit in Frankston",
     "ba3-after": "The same garden bed cut back to its rock edging with the brick paving swept clean",
@@ -258,6 +269,10 @@ IC = {
     "grid": '<rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/>',
     "arrow": '<path d="M5 12h14M13 6l6 6-6 6"/>',
     "arrows": '<path d="M9 7 4 12l5 5M15 7l5 5-5 5"/>',
+    "facebook": '<path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/>',
+    "instagram": ('<rect x="2" y="2" width="20" height="20" rx="5"/>'
+                  '<path d="M16 11.4A4 4 0 1 1 12.6 8 4 4 0 0 1 16 11.4Z"/>'
+                  '<path d="M17.5 6.5h.01"/>'),
     "chev-left": '<path d="M15 5 8 12l7 7"/>',
     "chev-right": '<path d="m9 5 7 7-7 7"/>',
 }
@@ -305,7 +320,7 @@ def head(page):
 
 <meta property="og:type" content="website">
 <meta property="og:locale" content="en_AU">
-<meta property="og:site_name" content="Greenline Services">
+<meta property="og:site_name" content="Prestige Property Care">
 <meta property="og:title" content="{page['title']}">
 <meta property="og:description" content="{page['desc']}">
 <meta property="og:url" content="{url}">
@@ -320,6 +335,7 @@ def head(page):
 <link rel="preload" as="style" href="{FONT_HREF}">
 <link rel="stylesheet" href="{FONT_HREF}" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="{FONT_HREF}"></noscript>
+<link rel="icon" href="{LOGO_MARK}" type="image/svg+xml">
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
@@ -353,9 +369,9 @@ def site_header(active, solid=False, modal_cta=True):
 
     return f"""<header class="site-header{' solid' if solid else ''}" id="top">
   <div class="nav-inner">
-    <a href="/" class="brand" aria-label="Greenline Services home">
-      <span class="brand-mark"><img src="/assets/img/logo-mark-120.png" alt="Greenline Services logo" width="120" height="120" decoding="async"></span>
-      <span class="brand-name">Greenline Services</span>
+    <a href="/" class="brand" aria-label="Prestige Property Care home">
+      <span class="brand-mark"><img src="{LOGO_MARK}" alt="Prestige Property Care logo" width="120" height="120" decoding="async"></span>
+      <span class="brand-name">Prestige Property Care</span>
     </a>
 
     <nav class="nav-main" aria-label="Main navigation">
@@ -468,10 +484,14 @@ def site_footer(with_modal=True):
     <div class="f-grid">
       <div class="f-about">
         <a href="/" class="brand">
-          <span class="brand-mark"><img src="/assets/img/logo-mark-120.png" alt="Greenline Services logo" width="120" height="120" loading="lazy" decoding="async"></span>
-          <span class="brand-name">Greenline Services</span>
+          <span class="brand-mark"><img src="{LOGO_MARK}" alt="Prestige Property Care logo" width="120" height="120" loading="lazy" decoding="async"></span>
+          <span class="brand-name">Prestige Property Care</span>
         </a>
         <p>Lawn, garden and property maintenance for Frankston and the Mornington Peninsula. Locally owned and run by {BIZ['owner']}.</p>
+        <ul class="f-social">
+          <li><a href="{BIZ['facebook']}" aria-label="Prestige Property Care on Facebook" rel="noopener">{svg('facebook')}</a></li>
+          <li><a href="{BIZ['instagram']}" aria-label="Prestige Property Care on Instagram" rel="noopener">{svg('instagram')}</a></li>
+        </ul>
       </div>
       <div>
         <h2 class="f-head">Services</h2>
@@ -488,12 +508,12 @@ def site_footer(with_modal=True):
           <li><a href="mailto:{BIZ['email']}">{BIZ['email']}</a></li>
           <li>{BIZ['public_address']}</li>
           <li><a href="/contact/">Request a free quote</a></li>
-          <li><a href="/about/">About Greenline</a></li>
+          <li><a href="/about/">About Prestige</a></li>
         </ul>
       </div>
     </div>
     <div class="f-bottom">
-      <span>&copy; 2026 Greenline Services. Frankston, Victoria. ABN details on request.</span>
+      <span>&copy; 2026 Prestige Property Care. Frankston, Victoria. ABN details on request.</span>
       <span>Lawn mowing in Frankston, gardening and property maintenance across the Mornington Peninsula.</span>
     </div>
   </div>
@@ -717,7 +737,7 @@ def work_gallery():
     return '<div class="work-grid">%s</div>' % "".join(out)
 
 
-# Real reviews from the Greenline Services Google Business Profile, quoted
+# Real reviews from the Prestige Property Care Google Business Profile, quoted
 # verbatim. Do not edit the wording, and do not add invented ones — fabricated
 # testimonials are a breach of Australian Consumer Law.
 TESTIMONIALS = [
@@ -731,7 +751,7 @@ TESTIMONIALS = [
      "Alicia"),
 ]
 
-GOOGLE_REVIEWS_URL = "https://www.google.com/maps/place/Greenline+services"
+GOOGLE_REVIEWS_URL = "https://www.google.com/maps?cid=12542257598963737778"
 
 
 def testimonials():
@@ -795,7 +815,12 @@ def local_business_schema():
     "addressCountry": "{BIZ['country']}"
   }},
   "geo": {{"@type":"GeoCoordinates","latitude":{BIZ['lat']},"longitude":{BIZ['lng']}}},
-  "hasMap": "https://www.google.com/maps/place/Greenline+services",
+  "hasMap": "https://www.google.com/maps?cid=12542257598963737778",
+  "sameAs": [
+    "{BIZ['facebook']}",
+    "{BIZ['instagram']}",
+    "https://www.google.com/maps?cid=12542257598963737778"
+  ],
   "openingHoursSpecification": [
     {{"@type":"OpeningHoursSpecification","dayOfWeek":["Monday","Tuesday","Wednesday","Thursday","Friday"],"opens":"07:00","closes":"17:00"}},
     {{"@type":"OpeningHoursSpecification","dayOfWeek":["Saturday"],"opens":"08:00","closes":"14:00"}}
@@ -905,7 +930,7 @@ def page_home():
   <div class="hero-in">
     <span class="eyebrow">Frankston &amp; the Mornington Peninsula</span>
     <h1>Lawn Mowing &amp; Garden Maintenance in <em>Frankston</em></h1>
-    <p class="hero-sub">Greenline Services is a local lawn and garden crew based in Frankston. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
+    <p class="hero-sub">Prestige Property Care is a local lawn and garden crew based in Frankston. We handle lawn mowing in Frankston, hedge trimming, gutter cleaning and full property tidy-ups &mdash; from Seaford and Carrum Downs down to Mornington and Mount Martha.</p>
     <div class="hero-cta">
       <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
@@ -954,7 +979,7 @@ def page_home():
       <div class="prose">
         <span class="eyebrow">Local lawn care</span>
         <h2>Straight answers, a fixed price, and the same person each time</h2>
-        <p><strong>Greenline Services provides lawn mowing in Frankston, Victoria, along with garden maintenance, hedge trimming, gutter cleaning and green waste removal, from a base in Frankston VIC 3199.</strong> We cover 18 suburbs across the Frankston City area and the Mornington Peninsula, on both one-off visits and regular weekly, fortnightly or monthly rounds.</p>
+        <p><strong>Prestige Property Care provides lawn mowing in Frankston, Victoria, along with garden maintenance, hedge trimming, gutter cleaning and green waste removal, from a base in Frankston VIC 3199.</strong> We cover 18 suburbs across the Frankston City area and the Mornington Peninsula, on both one-off visits and regular weekly, fortnightly or monthly rounds.</p>
         <p>Most people calling about lawn mowing in Frankston have one of two problems. Either the lawn has quietly got away from them over a wet fortnight, or they have been let down by someone who stopped turning up. Both are fixable. We quote the property before we start, we give you a day, and we keep to it.</p>
         <p>Every visit finishes the same way: lawn cut and caught, edges cut sharp along the paths and drives, paths blown clean, and the clippings on the trailer and gone. Nothing is left in a pile by the bin for you to sort out later.</p>
         <div class="callout">
@@ -971,9 +996,9 @@ def page_home():
   <div class="stripes" aria-hidden="true"></div>
   <div class="wrap" style="position:relative;z-index:2">
     <div class="sec-head">
-      <span class="eyebrow">About Greenline</span>
+      <span class="eyebrow">About Prestige</span>
       <h2>Local, and it shows in the work</h2>
-      <p class="lede">Greenline Services is run by {BIZ['owner']} out of Frankston. You deal with the person doing the job, not a call centre and not a rotating roster of subcontractors.</p>
+      <p class="lede">Prestige Property Care is run by {BIZ['owner']} out of Frankston. You deal with the person doing the job, not a call centre and not a rotating roster of subcontractors.</p>
     </div>
     <div class="why-grid">
       <div class="why-item">
@@ -994,7 +1019,7 @@ def page_home():
       </div>
     </div>
     <div class="hero-cta" style="margin-top:44px;margin-bottom:0">
-      <a href="/about/" class="btn-lg btn-ghost">More about Greenline {svg('arrow')}</a>
+      <a href="/about/" class="btn-lg btn-ghost">More about Prestige {svg('arrow')}</a>
     </div>
   </div>
 </section>
@@ -1048,7 +1073,7 @@ def page_home():
       <p class="lede">We cover lawn mowing in Frankston and every other service on this page across 18 suburbs, working out of Frankston. If yours is on the list, we can usually get to you within the week.</p>
     </div>
     {areas_grid()}
-    {map_embed('Greenline Services service area map — Frankston VIC and the Mornington Peninsula')}
+    {map_embed('Prestige Property Care service area map — Frankston VIC and the Mornington Peninsula')}
   </div>
 </section>
 
@@ -1166,7 +1191,7 @@ def page_service(sp):
 <section class="sec">
   <div class="wrap">
     <div class="sec-head">
-      <span class="eyebrow">Also from Greenline</span>
+      <span class="eyebrow">Also from Prestige</span>
       <h2>Other services we bring on the same visit</h2>
       <p class="lede">Most jobs get booked together. If we are already on site, adding another task rarely costs a second trip.</p>
     </div>
@@ -1184,14 +1209,14 @@ SERVICE_PAGES = [
 {
  "slug": "gutter-cleaning",
  "crumb": "Gutter Cleaning",
- "title": "Gutter Cleaning Frankston | Greenline Services",
- "desc": "Gutter cleaning in Frankston by Greenline Services. Gutters and downpipes cleared by hand, all debris taken away. Free quotes across the Peninsula.",
+ "title": "Gutter Cleaning Frankston | Prestige Property Care",
+ "desc": "Gutter cleaning in Frankston by Prestige Property Care. Gutters and downpipes cleared by hand, all debris taken away. Free quotes across the Peninsula.",
  "keyword": "gutter cleaning frankston",
  "eyebrow": "Gutter cleaning",
  "h1": "Gutter Cleaning in Frankston &amp; Surrounding Suburbs",
  "sub": "Gutters and downpipes cleared by hand, every bit of debris bagged and taken with us. Booked most often before storm season and after the autumn leaf drop.",
  "preselect": "Gutter cleaning",
- "answer": "Gutter cleaning in Frankston costs less than the eaves repair it prevents. Greenline Services clears gutters and downpipes by hand across Frankston, Seaford, Carrum Downs, Langwarrin and the Mornington Peninsula, removes all debris from the property, and quotes a fixed price before starting.",
+ "answer": "Gutter cleaning in Frankston costs less than the eaves repair it prevents. Prestige Property Care clears gutters and downpipes by hand across Frankston, Seaford, Carrum Downs, Langwarrin and the Mornington Peninsula, removes all debris from the property, and quotes a fixed price before starting.",
  "body": """
 <h2>Why gutter cleaning in Frankston matters more than it does most places</h2>
 <p>Frankston sits under a lot of gum. Between the leaf drop and the bark, a gutter that looked fine in February can be packed solid by May. Once it is full, water does not go down the downpipe &mdash; it goes over the lip, into the eaves, and then into the wall cavity or the ceiling. That is a plaster and timber job, and it costs many times what a <strong>gutter cleaning</strong> visit does.</p>
@@ -1235,14 +1260,14 @@ SERVICE_PAGES = [
 {
  "slug": "rubbish-removal",
  "crumb": "Green Waste &amp; Rubbish Removal",
- "title": "Rubbish Removal Frankston | Greenline Services",
- "desc": "Rubbish removal in Frankston from Greenline Services. Green waste, clippings, old timber and household junk loaded and taken away. Free quotes.",
+ "title": "Rubbish Removal Frankston | Prestige Property Care",
+ "desc": "Rubbish removal in Frankston from Prestige Property Care. Green waste, clippings, old timber and household junk loaded and taken away. Free quotes.",
  "keyword": "rubbish removal frankston",
  "eyebrow": "Green waste &amp; rubbish removal",
  "h1": "Green Waste &amp; Rubbish Removal in Frankston",
  "sub": "Clippings, prunings, old timber and general household junk loaded onto the trailer and taken away the same day. No waiting months for a council hard waste booking.",
  "preselect": "rubbish removal",
- "answer": "Rubbish removal in Frankston through Greenline Services means we load it and it leaves the same day. We take green waste, garden clippings, prunings, old timber and general household junk from properties across Frankston, Carrum Downs, Skye, Seaford and the Mornington Peninsula, for a fixed price quoted before we start.",
+ "answer": "Rubbish removal in Frankston through Prestige Property Care means we load it and it leaves the same day. We take green waste, garden clippings, prunings, old timber and general household junk from properties across Frankston, Carrum Downs, Skye, Seaford and the Mornington Peninsula, for a fixed price quoted before we start.",
  "body": """
 <h2>Rubbish removal in Frankston, without waiting on the council</h2>
 <p>Frankston City runs a hard waste service, and for some things it is the right answer. But it is booked out, it has rules about what goes on the nature strip, and it will not touch most garden waste at all. If you have a trailer load of hedge clippings, a dismantled deck or a garage that has not been emptied since you moved in, waiting is not much of a plan.</p>
@@ -1286,14 +1311,14 @@ SERVICE_PAGES = [
 {
  "slug": "garden-maintenance",
  "crumb": "Garden Maintenance",
- "title": "Gardener Frankston | Garden Maintenance | Greenline",
- "desc": "Need a gardener in Frankston? Greenline Services covers weeding, mulching, pruning and regular garden maintenance across Frankston and the Peninsula.",
+ "title": "Gardener Frankston | Garden Maintenance | Prestige",
+ "desc": "Need a gardener in Frankston? Prestige Property Care covers weeding, mulching, pruning and regular garden maintenance across Frankston and the Peninsula.",
  "keyword": "gardener frankston",
  "eyebrow": "Garden maintenance",
  "h1": "Your Local Gardener in Frankston &amp; Frankston South",
  "sub": "Weeding, mulching, pruning and general garden upkeep on a schedule that suits the property &mdash; whether you are time-poor, getting older, or managing the place from somewhere else.",
  "preselect": "Garden maintenance",
- "answer": "Greenline Services is a local gardener in Frankston covering weeding, mulching, pruning, bed maintenance and seasonal tidy-ups on regular scheduled visits. We work across Frankston, Frankston South, Karingal, Langwarrin and the Mornington Peninsula, and quote a fixed price per visit rather than charging by the hour.",
+ "answer": "Prestige Property Care is a local gardener in Frankston covering weeding, mulching, pruning, bed maintenance and seasonal tidy-ups on regular scheduled visits. We work across Frankston, Frankston South, Karingal, Langwarrin and the Mornington Peninsula, and quote a fixed price per visit rather than charging by the hour.",
  "body": """
 <h2>What a regular gardener in Frankston actually does</h2>
 <p>Mowing keeps the lawn under control. Everything else in a garden &mdash; the beds, the shrubs, the mulch, the weeds coming up through the gravel &mdash; needs a different kind of attention, and it is what most people are really asking for when they go looking for a <strong>gardener</strong> in Frankston.</p>
@@ -1339,14 +1364,14 @@ SERVICE_PAGES += [
 {
  "slug": "lawn-mowing",
  "crumb": "Lawn Mowing",
- "title": "Lawn Mowing Mornington | Greenline Services",
- "desc": "Lawn mowing in Mornington and across the Peninsula. Greenline Services mows, catches and edges on weekly, fortnightly or one-off visits. Free quotes.",
+ "title": "Lawn Mowing Mornington | Prestige Property Care",
+ "desc": "Lawn mowing in Mornington and across the Peninsula. Prestige Property Care mows, catches and edges on weekly, fortnightly or one-off visits. Free quotes.",
  "keyword": "lawn mowing mornington",
  "eyebrow": "Lawn mowing",
  "h1": "Lawn Mowing in Mornington &amp; the Mornington Peninsula",
  "sub": "Mown, caught and edged on every visit. Weekly and fortnightly rounds through Mornington, Mount Eliza, Mount Martha and Moorooduc, plus one-off cuts when a lawn has got away.",
  "preselect": "Lawn mowing",
- "answer": "Lawn mowing in Mornington from Greenline Services includes mowing, catching and edging on every visit, with all clippings taken away. We run weekly, fortnightly and monthly rounds across Mornington, Mount Eliza, Mount Martha, Moorooduc, Somerville and Tyabb, and quote a fixed price per visit.",
+ "answer": "Lawn mowing in Mornington from Prestige Property Care includes mowing, catching and edging on every visit, with all clippings taken away. We run weekly, fortnightly and monthly rounds across Mornington, Mount Eliza, Mount Martha, Moorooduc, Somerville and Tyabb, and quote a fixed price per visit.",
  "body": """
 <h2>Lawn mowing in Mornington is its own kind of job</h2>
 <p>Grass on the Peninsula grows on a different clock to the rest of Melbourne. The coastal humidity through Mornington and Mount Martha pushes couch and kikuyu hard from October onwards, and a lawn that was fine on a fortnightly cycle in September will be shin-deep by late November on the same schedule.</p>
@@ -1391,14 +1416,14 @@ SERVICE_PAGES += [
 {
  "slug": "hedge-trimming",
  "crumb": "Hedge Trimming &amp; Edging",
- "title": "Hedge Trimming Frankston | Greenline Services",
- "desc": "Hedge trimming in Frankston from Greenline Services. Hedges shaped and levelled, lawn edges cut sharp, all clippings taken away. Free quotes.",
+ "title": "Hedge Trimming Frankston | Prestige Property Care",
+ "desc": "Hedge trimming in Frankston from Prestige Property Care. Hedges shaped and levelled, lawn edges cut sharp, all clippings taken away. Free quotes.",
  "keyword": "hedge trimming frankston",
  "eyebrow": "Hedge trimming &amp; edging",
  "h1": "Hedge Trimming &amp; Lawn Edging in Frankston",
  "sub": "Hedges shaped, levelled and brought back into line, and edges cut sharp along every path, drive and garden bed. The two jobs that make a tidy yard look properly finished.",
  "preselect": "Hedge trimming",
- "answer": "Hedge trimming in Frankston from Greenline Services covers shaping, levelling and height reduction on hedges of any size, plus sharp lawn edging along paths, drives and garden beds. All clippings are taken away the same day, and we quote a fixed price across Frankston, Langwarrin, Karingal, Baxter and the Mornington Peninsula.",
+ "answer": "Hedge trimming in Frankston from Prestige Property Care covers shaping, levelling and height reduction on hedges of any size, plus sharp lawn edging along paths, drives and garden beds. All clippings are taken away the same day, and we quote a fixed price across Frankston, Langwarrin, Karingal, Baxter and the Mornington Peninsula.",
  "body": """
 <h2>Hedge trimming in Frankston: shaped, or just a bush</h2>
 <p>Hedges have a habit of creeping. A few centimetres a season on the top and both faces, and after three or four years the thing that was a crisp screen along the fence line is a wall of growth leaning into the path. It happens slowly enough that you stop noticing it.</p>
@@ -1441,14 +1466,14 @@ SERVICE_PAGES += [
 {
  "slug": "garden-clean-ups",
  "crumb": "Garden Clean-Ups",
- "title": "Garden Clean Up Frankston | Greenline Services",
- "desc": "Garden clean up in Frankston for end-of-lease and pre-sale. Greenline brings overgrown yards back to inspection standard and clears all waste.",
+ "title": "Garden Clean Up Frankston | Prestige Property Care",
+ "desc": "Garden clean up in Frankston for end-of-lease and pre-sale. Prestige brings overgrown yards back to inspection standard and clears all waste.",
  "keyword": "garden clean up frankston",
  "eyebrow": "End-of-lease &amp; pre-sale",
  "h1": "End-of-Lease &amp; Pre-Sale Garden Clean-Ups in Frankston",
  "sub": "Overgrown yards brought back to inspection standard, with every bit of waste gone the same day. Booked by renters chasing a bond, landlords between tenants, and agents preparing a home for photos.",
  "preselect": "clean-up",
- "answer": "A garden clean up in Frankston with Greenline Services brings an overgrown yard back to inspection standard in a single visit: lawns cut and edged, beds weeded, hedges shaped, paths cleared and all green waste removed. We work to your inspection or photography date across Frankston, Carrum Downs, Seaford, Mount Eliza and the Mornington Peninsula.",
+ "answer": "A garden clean up in Frankston with Prestige Property Care brings an overgrown yard back to inspection standard in a single visit: lawns cut and edged, beds weeded, hedges shaped, paths cleared and all green waste removed. We work to your inspection or photography date across Frankston, Carrum Downs, Seaford, Mount Eliza and the Mornington Peninsula.",
  "body": """
 <h2>A garden clean up in Frankston usually has a deadline attached</h2>
 <p>Almost every <strong>garden clean up</strong> we do in Frankston is driven by a date. Either there is a final inspection and a bond on the line, or the property is going to market and the photographer is booked for Thursday. Both mean the yard has to go from wherever it is now to presentable, in one visit, by a fixed day.</p>
@@ -1494,8 +1519,8 @@ SERVICE_PAGES += [
 
 # ============================================================ SERVICES HUB
 HUB_FAQS = [
-    ("What services does Greenline Services offer in Frankston?",
-     "Greenline Services offers lawn mowing, lawn edging, garden maintenance, hedge trimming, gutter cleaning, green waste and rubbish removal, end-of-lease and pre-sale garden clean-ups, and general property maintenance for commercial sites and rental portfolios. All of it is available across Frankston and the Mornington Peninsula, and most of it can be booked on a single visit."),
+    ("What services does Prestige Property Care offer in Frankston?",
+     "Prestige Property Care offers lawn mowing, lawn edging, garden maintenance, hedge trimming, gutter cleaning, green waste and rubbish removal, end-of-lease and pre-sale garden clean-ups, and general property maintenance for commercial sites and rental portfolios. All of it is available across Frankston and the Mornington Peninsula, and most of it can be booked on a single visit."),
     ("Can I book more than one service at once?",
      "Yes, and it is usually cheaper. If we are already on site for a mow, adding a hedge trim, a gutter clean or a load of green waste rarely costs a second call-out. One booking, one invoice, one crew that already knows the property."),
     ("Do you do regular visits or only one-off jobs?",
@@ -1512,7 +1537,7 @@ def page_services():
     {crumbs(trail)}
     <span class="eyebrow">All services</span>
     <h1>Lawn Mowing Services in Frankston &amp; Property Care</h1>
-    <p class="hero-sub">Everything Greenline Services does, in one place. Lawn mowing services in Frankston and across the Peninsula, plus gutters, hedges, gardens, green waste and full clean-ups &mdash; bookable together on a single visit.</p>
+    <p class="hero-sub">Everything Prestige Property Care does, in one place. Lawn mowing services in Frankston and across the Peninsula, plus gutters, hedges, gardens, green waste and full clean-ups &mdash; bookable together on a single visit.</p>
     <div class="hero-cta">
       <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
     </div>
@@ -1550,7 +1575,7 @@ def page_services():
       <div class="prose">
         <span class="eyebrow">Also available</span>
         <h2>Commercial and property maintenance</h2>
-        <p>Alongside the residential work, Greenline Services maintains grounds for commercial sites, body corporate properties and rental portfolios across Frankston and the Mornington Peninsula. That covers scheduled mowing and edging, hedge and garden bed upkeep, gutter cleaning, exterior tidy-ups and waste removal &mdash; run on a set cycle so the presentation never swings between overgrown and freshly cut.</p>
+        <p>Alongside the residential work, Prestige Property Care maintains grounds for commercial sites, body corporate properties and rental portfolios across Frankston and the Mornington Peninsula. That covers scheduled mowing and edging, hedge and garden bed upkeep, gutter cleaning, exterior tidy-ups and waste removal &mdash; run on a set cycle so the presentation never swings between overgrown and freshly cut.</p>
         <p>We also take on general property maintenance: the odd jobs around a site that fall between trades and never quite get booked. If you are not sure whether something is in scope, call and ask. We will tell you plainly if it is not our work.</p>
         <div class="callout">
           <p><strong>Managing more than one property?</strong> Send the addresses and how often each needs attention and we will price the lot together.</p>
@@ -1576,7 +1601,7 @@ def page_services():
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Common questions</span>
-      <h2>Booking Greenline</h2>
+      <h2>Booking Prestige</h2>
     </div>
     {faq_block(HUB_FAQS)}
   </div>
@@ -1589,10 +1614,10 @@ def page_services():
 
 # ================================================================== ABOUT
 ABOUT_FAQS = [
-    ("Who is Greenline Services?",
-     "Greenline Services is a lawn, garden and property maintenance business based in Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
+    ("Who is Prestige Property Care?",
+     "Prestige Property Care is a lawn, garden and property maintenance business based in Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
     ("Are you insured?",
-     "Yes. Greenline Services carries public liability insurance, and we are happy to provide the certificate of currency to property managers, body corporates and commercial clients who need it on file before work starts."),
+     "Yes. Prestige Property Care carries public liability insurance, and we are happy to provide the certificate of currency to property managers, body corporates and commercial clients who need it on file before work starts."),
     ("Do you use subcontractors?",
      "No. The person who quotes your property is the person who does the work. That is the main reason clients stay with us &mdash; nobody has to be re-briefed on where the gate key is or which garden bed is not to be touched."),
     ("What areas do you cover?",
@@ -1608,7 +1633,7 @@ def page_about():
   <div class="hero-in">
     {crumbs(trail)}
     <span class="eyebrow">About us</span>
-    <h1>About Greenline Services, Frankston</h1>
+    <h1>About Prestige Property Care, Frankston</h1>
     <p class="hero-sub">A local lawn and garden business run out of Frankston by {BIZ['owner']}. Same crew every visit, fixed prices, and the waste leaves with us.</p>
     <div class="hero-cta">
       <button type="button" class="btn-lg btn-solid" data-quote-open>Get a free quote</button>
@@ -1636,7 +1661,7 @@ def page_about():
       <div class="prose">
         <span class="eyebrow">Our story</span>
         <h2>One person, one trailer, and a round that kept growing</h2>
-        <p><strong>Greenline Services is a lawn, garden and property maintenance business operating from Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
+        <p><strong>Prestige Property Care is a lawn, garden and property maintenance business operating from Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
         <p>The business grew the way these ones tend to: one property, then the neighbour, then their sister in Seaford. Nearly all of it came from people telling someone else that we turned up when we said we would. That is not a marketing line, it is just what happens in this trade when most operators do not.</p>
         <p>What has not changed as the round has grown is who does the work. There are no subcontractors and no rotating crews. The person who quotes your property is the person standing in it on the day, which is why nobody ever has to be told twice about the side gate, the dog, or the bed of natives that is not to be trimmed.</p>
         <h2>How we price</h2>
@@ -1697,7 +1722,7 @@ def page_about():
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Map of the Greenline Services area around Frankston VIC 3199')}</div>
+      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1706,7 +1731,7 @@ def page_about():
   <div class="wrap">
     <div class="sec-head">
       <span class="eyebrow">Common questions</span>
-      <h2>About Greenline</h2>
+      <h2>About Prestige</h2>
     </div>
     {faq_block(ABOUT_FAQS)}
   </div>
@@ -1719,8 +1744,8 @@ def page_about():
 
 # ================================================================ CONTACT
 CONTACT_FAQS = [
-    ("How do I get a quote from Greenline Services?",
-     "Call 0494 154 184, email davidcoelho92@hotmail.com, or send the form on this page with your suburb and what you need looked at. Quotes are free, given as a fixed price rather than an hourly rate, and there is no obligation to book once you have the number."),
+    ("How do I get a quote from Prestige Property Care?",
+     "Call 0466 687 252, email dave@prestigepropertycare.com.au, or send the form on this page with your suburb and what you need looked at. Quotes are free, given as a fixed price rather than an hourly rate, and there is no obligation to book once you have the number."),
     ("How quickly do you respond?",
      "Calls are the fastest way to get an answer and are usually picked up or returned the same day. Form and email enquiries are answered within one business day. If you have a hard deadline &mdash; an inspection, a photography date, a storm on the way &mdash; say so and we will prioritise it."),
     ("What are your hours?",
@@ -1740,7 +1765,7 @@ def page_contact():
       <div class="hero-copy">
         {crumbs(trail)}
         <span class="eyebrow">Get in touch</span>
-        <h1>Contact Greenline Services &mdash; Free Quotes in Frankston</h1>
+        <h1>Contact Prestige Property Care &mdash; Free Quotes in Frankston</h1>
         <p class="hero-sub">Fill in the form and we will come back to you with a fixed price, usually the same day. No call-out fee, no obligation.</p>
         <div class="hero-cta">
           <a href="mailto:{BIZ['email']}" class="btn-lg btn-ghost">{svg('mail')} Email us</a>
@@ -1783,7 +1808,7 @@ def page_contact():
           <p><strong>Got a deadline?</strong> End-of-lease inspections and pre-sale photography dates get priority. Tell us the date when you call and we will work backwards from it.</p>
         </div>
       </div>
-      <div>{map_embed('Map of the Greenline Services area around Frankston VIC 3199')}</div>
+      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1821,8 +1846,8 @@ def build_pages():
         "path": "/",
         "file": "index.html",
         "active": "home",
-        "title": "Lawn Mowing Frankston | Garden Care | Greenline Services",
-        "desc": "Lawn mowing in Frankston from Greenline Services. Local lawn care, garden maintenance, hedge trimming and gutter cleaning across the Mornington Peninsula.",
+        "title": "Lawn Mowing Frankston | Garden Care | Prestige Property Care",
+        "desc": "Lawn mowing in Frankston from Prestige Property Care. Local lawn care, garden maintenance, hedge trimming and gutter cleaning across the Mornington Peninsula.",
         "body": page_home(), "lcp": "hero",
         "schema": [local_business_schema(), website_schema(),
                    faq_schema(HOME_FAQS), breadcrumb_schema([("Home", "/")])],
@@ -1834,8 +1859,8 @@ def build_pages():
         "path": "/services/",
         "file": "services/index.html",
         "active": "services",
-        "title": "Lawn Mowing Services Frankston | All Services | Greenline",
-        "desc": "All Greenline Services lawn mowing services in Frankston: mowing, gutter cleaning, garden maintenance, hedge trimming, rubbish removal and garden clean-ups.",
+        "title": "Lawn Mowing Services Frankston | All Services | Prestige",
+        "desc": "All Prestige Property Care lawn mowing services in Frankston: mowing, gutter cleaning, garden maintenance, hedge trimming, rubbish removal and garden clean-ups.",
         "body": page_services(), "lcp": "work-garden",
         "schema": [faq_schema(HUB_FAQS),
                    breadcrumb_schema([("Home", "/"), ("Services", "/services/")])],
@@ -1867,8 +1892,8 @@ def build_pages():
         "path": "/about/",
         "file": "about/index.html",
         "active": "about",
-        "title": "About Greenline Services | Lawn &amp; Garden Care Frankston",
-        "desc": "Greenline Services is a Frankston lawn and garden business run by Dave Coelho. Same crew every visit, fixed quotes, all waste taken away. Serving 18 suburbs.",
+        "title": "About Prestige Property Care | Lawn &amp; Garden Care Frankston",
+        "desc": "Prestige Property Care is a Frankston lawn and garden business run by Dave Coelho. Same crew every visit, fixed quotes, waste taken away. Serving 18 suburbs.",
         "body": page_about(), "lcp": "about-dave",
         "schema": [local_business_schema(),
                    faq_schema(ABOUT_FAQS),
@@ -1882,8 +1907,8 @@ def build_pages():
         "path": "/contact/",
         "file": "contact/index.html",
         "active": "contact",
-        "title": "Contact Greenline Services | Free Quote Frankston VIC",
-        "desc": "Contact Greenline Services in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0494 154 184 or send the quote form.",
+        "title": "Contact Prestige Property Care | Free Quote Frankston VIC",
+        "desc": "Contact Prestige Property Care in Frankston for a free lawn mowing, gutter cleaning or garden clean-up quote. Call 0466 687 252 or send the quote form.",
         "body": page_contact(), "modal": False, "lcp": "work-lawn",
         "schema": [local_business_schema(),
                    faq_schema(CONTACT_FAQS),
@@ -1900,7 +1925,7 @@ def about_page_schema():
   "@context": "https://schema.org",
   "@type": "AboutPage",
   "url": "{SITE}/about/",
-  "name": "About Greenline Services",
+  "name": "About Prestige Property Care",
   "mainEntity": {{"@id": "{SITE}/#business"}}
 }}"""
 
@@ -1910,7 +1935,7 @@ def contact_page_schema():
   "@context": "https://schema.org",
   "@type": "ContactPage",
   "url": "{SITE}/contact/",
-  "name": "Contact Greenline Services",
+  "name": "Contact Prestige Property Care",
   "mainEntity": {{"@id": "{SITE}/#business"}}
 }}"""
 
@@ -1920,7 +1945,7 @@ def page_thanks():
   <div class="hero-in">
     <span class="eyebrow">Request received</span>
     <h1>Thanks &mdash; we&rsquo;ve got your details</h1>
-    <p class="hero-sub">Your quote request has come through to Greenline Services. {BIZ['owner']} will get back to you with a fixed price, usually the same day and always within one business day.</p>
+    <p class="hero-sub">Your quote request has come through to Prestige Property Care. {BIZ['owner']} will get back to you with a fixed price, usually the same day and always within one business day.</p>
     <div class="hero-cta">
       <a href="/" class="btn-lg btn-solid">Back to the homepage</a>
     </div>
@@ -1976,11 +2001,11 @@ def page_thanks():
       <div>
         <div class="sec-head" style="margin-bottom:26px">
           <span class="eyebrow">Our details</span>
-          <h2>Greenline Services, Frankston</h2>
+          <h2>Prestige Property Care, Frankston</h2>
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Map of the Greenline Services area around Frankston VIC 3199')}</div>
+      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
     </div>
   </div>
 </section>
@@ -1990,7 +2015,7 @@ def page_thanks():
 
 
 BANNER = ("<!-- Generated by tools/build.py — edit the content there, not here. "
-          "Greenline Services, Frankston VIC. -->\n")
+          "Prestige Property Care, Frankston VIC. -->\n")
 
 
 def render(page):
@@ -2105,14 +2130,14 @@ def main():
         written.append(write(p["file"], render(p)))
 
     written.append(write("thank-you/index.html", render({
-        "path": "/thank-you/", "active": "", "title": "Thank You | Greenline Services Frankston",
-        "desc": "Thanks for your quote request. Greenline Services will come back to you with a fixed price, usually the same day and always within one business day.",
+        "path": "/thank-you/", "active": "", "title": "Thank You | Prestige Property Care Frankston",
+        "desc": "Thanks for your quote request. Prestige Property Care will come back to you with a fixed price, usually the same day and always within one business day.",
         "body": page_thanks(), "schema": [], "robots": "noindex, follow",
     })))
 
     written.append(write("404.html", render({
-        "path": "/404.html", "active": "", "title": "Page not found | Greenline Services",
-        "desc": "The page you were looking for does not exist. Browse Greenline Services lawn and garden services in Frankston, or get in touch for a free quote.",
+        "path": "/404.html", "active": "", "title": "Page not found | Prestige Property Care",
+        "desc": "The page you were looking for does not exist. Browse Prestige Property Care lawn and garden services in Frankston, or get in touch for a free quote.",
         "body": NOT_FOUND_BODY, "schema": [], "robots": "noindex, follow",
     })))
     written.append(write("sitemap.xml", sitemap(pages)))

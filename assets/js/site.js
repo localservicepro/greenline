@@ -1,4 +1,4 @@
-/* Greenline Services — shared site behaviour */
+/* Prestige Property Care — shared site behaviour */
 (function () {
   "use strict";
 

@@ -1,10 +1,11 @@
 /* ==========================================================================
-   Greenline Services — site stylesheet
+   Prestige Property Care — site stylesheet
    Frankston VIC · lawn, garden and property maintenance
    ========================================================================== */
 
 :root{
-  /* Palette derived from the Greenline Services logo.
+  /* Palette carried over from the original brand artwork and kept through the
+     rename to Prestige Property Care — the new logo mark is drawn in it.
      Sampled from the artwork: deep leaf #19551D, ring green #498526,
      wordmark charcoal #262626.
      --fern is a lightened tint of the ring green: the raw #498526 only reaches
@@ -440,6 +441,14 @@ footer ul{list-style:none}
 footer li{margin-bottom:9px;font-size:.93rem}
 footer a:hover{color:var(--fern)}
 .f-about p{font-size:.95rem;margin:16px 0 0;max-width:38ch;color:rgba(255,255,255,.62)}
+/* 44px hit area on a 20px glyph — the icons are the smallest targets in the footer. */
+.f-social{display:flex;gap:6px;margin:18px 0 0}
+.f-social li{margin:0}
+.f-social a{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.78)}
+.f-social a:hover{color:var(--fern);border-color:rgba(255,255,255,.34)}
+.f-social svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
 .f-bottom{margin-top:56px;border-top:1px solid rgba(255,255,255,.12);padding:24px 0;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
   font-size:.85rem;color:rgba(255,255,255,.66);position:relative;z-index:2}
 

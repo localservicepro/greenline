@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Greenline Services — build checks.
+Prestige Property Care — build checks.
 
 Run after tools/build.py. Exits non-zero if anything fails, so it can gate a
 deploy.
@@ -246,7 +246,7 @@ def check_sitemap(files):
         path = '/' + (os.path.dirname(f) + '/' if os.path.dirname(f) else '')
         noindex = 'noindex' in (re.search(r'<meta name="robots" content="([^"]*)"', s) or
                                 type('', (), {'group': lambda *a: ''})()).group(1)
-        listed = '<loc>https://greenlineservices.com.au%s</loc>' % path in sm
+        listed = '<loc>https://prestigepropertycare.com.au%s</loc>' % path in sm
         if noindex and listed:
             fail(f, 'noindex page is listed in the sitemap')
         if not noindex and not listed:

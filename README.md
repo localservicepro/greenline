@@ -1,7 +1,11 @@
-# Greenline Services — website
+# Prestige Property Care — website
 
-Static marketing site for **Greenline Services**, a lawn, garden and property
-maintenance business at 2/15 St Johns Ave, Frankston VIC 3199.
+Static marketing site for **Prestige Property Care**, a lawn, garden and property
+maintenance business at 2/15 St Johns Ave, Frankston VIC 3199. The business traded
+as Greenline Services until the September 2026 rename; the Google Business Profile
+still carries the old name, so the embedded map and the reviews link point at it by
+CID (`?cid=12542257598963737778`) rather than by name — that keeps working after the
+profile is renamed.
 
 Built to the SEO / GEO / AEO strategy in the client research document: one page
 per money keyword, no cannibalisation, structured data throughout, and answer-first
@@ -160,7 +164,8 @@ It is a clean conversion trigger for a GHL workflow or a GA4 goal.
 
 ## Brand
 
-Palette sampled directly from the client's logo artwork:
+Palette sampled from the original brand artwork and kept through the rename — the
+new mark is drawn in it:
 
 | Token | Hex | Source |
 |---|---|---|
@@ -178,16 +183,38 @@ green is kept as `--brand-fresh` for light surfaces.
 Every sampled text/background pair on the rendered pages passes WCAG AA. `--text-3`
 was darkened from `#87908A` to `#666F69` for this reason — the old value was 3.29:1.
 
-Logo files in `assets/img/`: `logo-mark.png` (the circular mark, background knocked
-out and un-premultiplied so it carries no white fringe onto dark), `logo-lockup.png`
-(horizontal lockup with wordmark), plus `favicon-32`, `apple-touch-icon`, `icon-192`
-and `icon-512`. The header and footer use the mark on a white chip so it stays
-legible against both the transparent-over-hero and the scrolled-light header.
+### Logo
+
+The old Greenline mark (leaf pair in a gradient ring) went with the old name. Three
+replacement marks are drawn as SVG in `assets/img/logo/`, all flat colour, no
+gradients, each legible down to a 24px favicon and in one colour:
+
+| File | Direction |
+|---|---|
+| `mark-crest.svg` | **shipped** — a shield banded with mowing stripes |
+| `mark-pleaf.svg` | single-stroke `P` whose bowl comes to a leaf point |
+| `mark-level.svg` | three hedges cut to one level line over a strip of lawn |
+
+A fourth option is wordmark-only: no mark at all, "PRESTIGE" in Fraunces over a rule
+with "PROPERTY CARE" letterspaced under it.
+
+Switching mark is one line — `LOGO_MARK` in `tools/build.py` — then:
+
+    node tools/gen-icons.js && python3 tools/build.py
+
+`tools/gen-icons.js` redraws `favicon-32`, `apple-touch-icon`, `icon-192` and
+`icon-512` from whichever mark `LOGO_MARK` names. Browsers get the SVG itself as the
+tab icon; the PNGs are the fallback and the iOS home-screen icon, and they are drawn
+on solid white because a transparent dark-green mark disappears on a dark home
+screen. The header and footer use the mark on a white chip so it stays legible
+against both the transparent-over-hero and the scrolled-light header.
 
 ## Images
 
 All photography is the client's own job photos, from the `Compressed` folder in
-their Google Drive, resized and compressed here (~4.9 MB for 12 images).
+their Google Drive, resized and compressed here (~4.9 MB for 12 images). The lawn
+mowing photo is the later replacement the client supplied separately, cropped to the
+same 4:3 as the other service shots.
 Nothing is stock or generated.
 
 Every image is matched to the service it sits on:
@@ -286,11 +313,18 @@ a portrait would be the three highest-value additions.
 
 ## Launch checklist
 
-- [ ] Register `greenlineservices.com.au` and enable HTTPS
-- [ ] Confirm `SITE` in `tools/build.py` matches the live domain, then rebuild
+- [ ] Point `prestigepropertycare.com.au` at the host and enable HTTPS (the domain
+      resolves already; `SITE` in `tools/build.py` is set to it)
+- [ ] Confirm the mailbox is `dave@prestigepropertycare.com.au` — the amendment
+      sheet spelled the domain `prestgie…`, which does not resolve, so it is
+      treated here as a typo. One line in `BIZ` if it turns out to be real
+- [ ] Rename the Google Business Profile to Prestige Property Care (the map embed
+      and reviews link are CID-based and survive the rename; the profile name is
+      what visitors see in the embed)
+- [ ] Confirm which logo option the client wants — `LOGO_MARK` in `tools/build.py`
 - [ ] Enable Form Analytics and Form Submissions in GHL settings
-- [ ] Create the `property_address`, `service_needed` and `job_notes` custom
-      fields in GHL
+- [ ] Create the `property_address`, `property_size`, `service_needed` and
+      `job_notes` custom fields in GHL
 - [ ] Point `FORM_ACTION` at a real form endpoint so leads also arrive by email
       and are not carried in a query string
 - [ ] Submit a live test and confirm the contact appears in GHL with all six
