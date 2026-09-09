@@ -55,7 +55,7 @@ BIZ = {
 # The logo mark. Three alternatives live in assets/img/logo/ (mark-crest.svg,
 # mark-pleaf.svg, mark-level.svg) — switching the brand over is this one line
 # plus a re-run of tools/gen-icons.py to redraw the favicon and app icons.
-LOGO_MARK = "/assets/img/logo/mark-crest.svg"
+LOGO_MARK = "/assets/img/logo/mark-pleaf.svg"
 
 SUBURBS = [
     "Frankston", "Frankston South", "Frankston North", "Seaford", "Langwarrin",

@@ -191,8 +191,8 @@ gradients, each legible down to a 24px favicon and in one colour:
 
 | File | Direction |
 |---|---|
-| `mark-crest.svg` | **shipped** — a shield banded with mowing stripes |
-| `mark-pleaf.svg` | single-stroke `P` whose bowl comes to a leaf point |
+| `mark-pleaf.svg` | **shipped** — single-stroke `P` whose bowl comes to a leaf point |
+| `mark-crest.svg` | a shield banded with mowing stripes |
 | `mark-level.svg` | three hedges cut to one level line over a strip of lawn |
 
 A fourth option is wordmark-only: no mark at all, "PRESTIGE" in Fraunces over a rule
