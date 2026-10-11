@@ -1,0 +1,379 @@
+{
+ "about-dave": {
+  "file": "about-dave.jpg",
+  "h": 1067,
+  "srcset": [
+   [
+    480,
+    "about-dave-480.jpg"
+   ],
+   [
+    800,
+    "about-dave-800.jpg"
+   ],
+   [
+    1200,
+    "about-dave-1200.jpg"
+   ],
+   [
+    1600,
+    "about-dave.jpg"
+   ]
+  ],
+  "w": 1600
+ },
+ "apple-touch-icon": {
+  "file": "apple-touch-icon.png",
+  "h": 180,
+  "srcset": [],
+  "w": 180
+ },
+ "ba1-after": {
+  "file": "ba1-after.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "ba1-after-480.jpg"
+   ],
+   [
+    800,
+    "ba1-after-800.jpg"
+   ],
+   [
+    1200,
+    "ba1-after.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "ba1-before": {
+  "file": "ba1-before.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "ba1-before-480.jpg"
+   ],
+   [
+    800,
+    "ba1-before-800.jpg"
+   ],
+   [
+    1200,
+    "ba1-before.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "ba2-after": {
+  "file": "ba2-after.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "ba2-after-480.jpg"
+   ],
+   [
+    800,
+    "ba2-after-800.jpg"
+   ],
+   [
+    1200,
+    "ba2-after.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "ba2-before": {
+  "file": "ba2-before.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "ba2-before-480.jpg"
+   ],
+   [
+    800,
+    "ba2-before-800.jpg"
+   ],
+   [
+    1200,
+    "ba2-before.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "ba3-after": {
+  "file": "ba3-after.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "ba3-after-480.jpg"
+   ],
+   [
+    800,
+    "ba3-after-800.jpg"
+   ],
+   [
+    1200,
+    "ba3-after.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "ba3-before": {
+  "file": "ba3-before.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "ba3-before-480.jpg"
+   ],
+   [
+    800,
+    "ba3-before-800.jpg"
+   ],
+   [
+    1200,
+    "ba3-before.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "favicon-32": {
+  "file": "favicon-32.png",
+  "h": 32,
+  "srcset": [],
+  "w": 32
+ },
+ "garden-clean-ups": {
+  "file": "garden-clean-ups.jpg",
+  "h": 1200,
+  "srcset": [
+   [
+    480,
+    "garden-clean-ups-480.jpg"
+   ],
+   [
+    800,
+    "garden-clean-ups-800.jpg"
+   ],
+   [
+    1200,
+    "garden-clean-ups-1200.jpg"
+   ],
+   [
+    1600,
+    "garden-clean-ups.jpg"
+   ]
+  ],
+  "w": 1600
+ },
+ "garden-maintenance": {
+  "file": "garden-maintenance.jpg",
+  "h": 1200,
+  "srcset": [
+   [
+    480,
+    "garden-maintenance-480.jpg"
+   ],
+   [
+    800,
+    "garden-maintenance-800.jpg"
+   ],
+   [
+    1200,
+    "garden-maintenance-1200.jpg"
+   ],
+   [
+    1600,
+    "garden-maintenance.jpg"
+   ]
+  ],
+  "w": 1600
+ },
+ "gutter-cleaning": {
+  "file": "gutter-cleaning.jpg",
+  "h": 1200,
+  "srcset": [
+   [
+    480,
+    "gutter-cleaning-480.jpg"
+   ],
+   [
+    800,
+    "gutter-cleaning-800.jpg"
+   ],
+   [
+    1200,
+    "gutter-cleaning-1200.jpg"
+   ],
+   [
+    1600,
+    "gutter-cleaning.jpg"
+   ]
+  ],
+  "w": 1600
+ },
+ "hedge-trimming": {
+  "file": "hedge-trimming.jpg",
+  "h": 1200,
+  "srcset": [
+   [
+    480,
+    "hedge-trimming-480.jpg"
+   ],
+   [
+    800,
+    "hedge-trimming-800.jpg"
+   ],
+   [
+    1200,
+    "hedge-trimming-1200.jpg"
+   ],
+   [
+    1600,
+    "hedge-trimming.jpg"
+   ]
+  ],
+  "w": 1600
+ },
+ "hero": {
+  "file": "hero.jpg",
+  "h": 1125,
+  "srcset": [
+   [
+    480,
+    "hero-480.jpg"
+   ],
+   [
+    800,
+    "hero-800.jpg"
+   ],
+   [
+    1200,
+    "hero-1200.jpg"
+   ],
+   [
+    1600,
+    "hero-1600.jpg"
+   ],
+   [
+    2000,
+    "hero.jpg"
+   ]
+  ],
+  "w": 2000
+ },
+ "lawn-mowing": {
+  "file": "lawn-mowing.jpg",
+  "h": 978,
+  "srcset": [
+   [
+    480,
+    "lawn-mowing-480.jpg"
+   ],
+   [
+    800,
+    "lawn-mowing-800.jpg"
+   ],
+   [
+    1200,
+    "lawn-mowing-1200.jpg"
+   ],
+   [
+    1304,
+    "lawn-mowing.jpg"
+   ]
+  ],
+  "w": 1304
+ },
+ "og": {
+  "file": "og.jpg",
+  "h": 630,
+  "srcset": [],
+  "w": 1200
+ },
+ "rubbish-removal": {
+  "file": "rubbish-removal.jpg",
+  "h": 1200,
+  "srcset": [
+   [
+    480,
+    "rubbish-removal-480.jpg"
+   ],
+   [
+    800,
+    "rubbish-removal-800.jpg"
+   ],
+   [
+    1200,
+    "rubbish-removal-1200.jpg"
+   ],
+   [
+    1600,
+    "rubbish-removal.jpg"
+   ]
+  ],
+  "w": 1600
+ },
+ "work-garden": {
+  "file": "work-garden.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "work-garden-480.jpg"
+   ],
+   [
+    800,
+    "work-garden-800.jpg"
+   ],
+   [
+    1200,
+    "work-garden.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "work-hedge": {
+  "file": "work-hedge.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "work-hedge-480.jpg"
+   ],
+   [
+    800,
+    "work-hedge-800.jpg"
+   ],
+   [
+    1200,
+    "work-hedge.jpg"
+   ]
+  ],
+  "w": 1200
+ },
+ "work-lawn": {
+  "file": "work-lawn.jpg",
+  "h": 900,
+  "srcset": [
+   [
+    480,
+    "work-lawn-480.jpg"
+   ],
+   [
+    800,
+    "work-lawn-800.jpg"
+   ],
+   [
+    1200,
+    "work-lawn.jpg"
+   ]
+  ],
+  "w": 1200
+ }
+}

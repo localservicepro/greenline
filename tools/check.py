@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Greenline Services — build checks.
+Prestige Property Care — build checks.
 
 Run after tools/build.py. Exits non-zero if anything fails, so it can gate a
 deploy.
@@ -24,8 +24,12 @@ VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link',
 
 # name -> CRM field, per the GHL mapping
 GHL_FIELDS = {"full_name", "email", "phone",
-              "property_address", "service_needed", "job_notes"}
+              "property_address", "property_size", "service_needed", "job_notes"}
 GHL_TRACKING_ID = "tk_9f5144f196b340e59b8396dd9921dc07"
+
+# The client does not want the street address on the pages. It belongs in the
+# LocalBusiness JSON-LD only, where it is machine-readable without being shown.
+STREET = "St Johns Ave"
 
 # page -> the one keyword it is built to rank for
 TARGETS = {
@@ -72,6 +76,9 @@ class Nesting(HTMLParser):
 
 def visible_text(body):
     body = re.sub(r'<(script|style|iframe)[^>]*>.*?</\1>', ' ', body, flags=re.S | re.I)
+    # The quote popup is hidden boilerplate repeated on every page — it is not
+    # body copy, so it must not count towards or dilute keyword density.
+    body = re.sub(r'<div class="modal" id="quote-modal" hidden>.*?\n</div>', ' ', body, flags=re.S)
     return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', body)))
 
 
@@ -133,12 +140,15 @@ def check_form(f):
     s = open(f, encoding='utf-8').read()
     if 'quote-form' not in s:
         return
-    m = re.search(r'<form class="quote-form".*?</form>', s, re.S)
-    if not m:
+    forms = re.findall(r'<form class="quote-form".*?</form>', s, re.S)
+    if not forms:
         fail(f, 'quote form markup not found')
         return
-    form = m.group(0)
+    for form in forms:
+        check_one_form(f, form)
 
+
+def check_one_form(f, form):
     names = re.findall(r'name="([^"]+)"', form)
     missing = GHL_FIELDS - set(names)
     extra = set(names) - GHL_FIELDS
@@ -157,6 +167,29 @@ def check_form(f):
         fail(f, 'form has a disabled field — GHL skips those')
     if '<iframe' in form:
         fail(f, 'form is iframe-based, which GHL does not support')
+
+
+def check_address(f):
+    """The street address must appear in JSON-LD and nowhere else.
+
+    Visible copy shows suburb, state and postcode only. Putting it back into
+    rendered text (or hiding it with CSS to feed crawlers, which is cloaking)
+    both fail here.
+    """
+    s = open(f, encoding='utf-8').read()
+
+    blocks = re.findall(r'<script type="application/ld\+json">(.*?)</script>', s, re.S)
+    in_schema = any(STREET in b for b in blocks)
+
+    stripped = re.sub(r'<script[^>]*>.*?</script>', ' ', s, flags=re.S)
+    stripped = re.sub(r'<style[^>]*>.*?</style>', ' ', stripped, flags=re.S)
+    if STREET in stripped:
+        fail(f, 'street address appears in visible markup — it belongs in JSON-LD only')
+
+    # JSON-LD is now the only carrier for the address, so the pages a crawler
+    # looks to for NAP must each define the business entity in full.
+    if f in ('index.html', 'about/index.html', 'contact/index.html') and not in_schema:
+        fail(f, 'street address missing from the LocalBusiness JSON-LD')
 
 
 def check_js():
@@ -213,7 +246,7 @@ def check_sitemap(files):
         path = '/' + (os.path.dirname(f) + '/' if os.path.dirname(f) else '')
         noindex = 'noindex' in (re.search(r'<meta name="robots" content="([^"]*)"', s) or
                                 type('', (), {'group': lambda *a: ''})()).group(1)
-        listed = '<loc>https://greenlineservices.com.au%s</loc>' % path in sm
+        listed = '<loc>https://prestigepropertycare.com.au%s</loc>' % path in sm
         if noindex and listed:
             fail(f, 'noindex page is listed in the sitemap')
         if not noindex and not listed:
@@ -228,6 +261,7 @@ def main():
     for f in files:
         check_page(f)
         check_form(f)
+        check_address(f)
     check_js()
     check_density()
     check_links(files)
