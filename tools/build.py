@@ -46,6 +46,13 @@ BIZ = {
     # is on the misspelt domain, change this one line and rebuild.
     "email": "dave@prestigepropertycare.com.au",
     "owner": "Dave Coelho",
+    # The Google Business Profile rename to Prestige Property Care was rejected,
+    # so the profile — and therefore the reviews, the map pin and anything Google
+    # shows from the listing — still reads Greenline Services. The site states the
+    # former name in the LocalBusiness schema as alternateName and in visible copy
+    # next to anything that links out to the profile, so the two names resolve to
+    # one entity for both Google and the visitor who arrives from the listing.
+    "former_name": "Greenline Services",
     "lat": -38.1442,
     "lng": 145.1281,
     "facebook": "https://www.facebook.com/profile.php?id=61594050001979",
@@ -64,10 +71,20 @@ SUBURBS = [
     "Somerville", "Tyabb", "Mornington Peninsula",
 ]
 
+# Google rejected the Business Profile rename, so the profile is still titled
+# "Greenline services" and a place-based embed renders that old name on a site
+# branded Prestige Property Care. This is the same viewport the client's own
+# embed used — identical centre, zoom and tilt — with the place block
+# (!3m3!1m2!1s<ftid>!2s<label>) dropped and the group count corrected from
+# !1m18 to !1m14, so it draws the service area with no stale label on it.
+#
+# The client's original place embed, if the profile name is ever approved:
+#   ...!4f13.1!3m3!1m2!1s0x471521d92f4fcf41%3A0xae0f0cd5a3ad64b2
+#   !2sGreenline%20services!5e0!3m2!1sen!2sph!4v1787142280589!5m2!1sen!2sph
 GMB_EMBED = (
-    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d200705.6214454393!2d145.1110961"
-    "!3d-38.1860856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471521d92f4fcf41"
-    "%3A0xae0f0cd5a3ad64b2!2sGreenline%20services!5e0!3m2!1sen!2sph!4v1787142280589!5m2!1sen!2sph"
+    "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d200705.6214454393!2d145.1110961"
+    "!3d-38.1860856!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sau"
+    "!4v1787142280589!5m2!1sen!2sau"
 )
 
 # ------------------------------------------------------------ GoHighLevel CRM
@@ -513,7 +530,7 @@ def site_footer(with_modal=True):
       </div>
     </div>
     <div class="f-bottom">
-      <span>&copy; 2026 Prestige Property Care. Frankston, Victoria. ABN details on request.</span>
+      <span>&copy; 2026 Prestige Property Care, formerly {BIZ['former_name']}. Frankston, Victoria. ABN details on request.</span>
       <span>Lawn mowing in Frankston, gardening and property maintenance across the Mornington Peninsula.</span>
     </div>
   </div>
@@ -797,6 +814,7 @@ def local_business_schema():
   "@type": ["LocalBusiness","HomeAndConstructionBusiness"],
   "@id": "{SITE}/#business",
   "name": "{BIZ['name']}",
+  "alternateName": "{BIZ['former_name']}",
   "description": "Lawn mowing, garden maintenance, hedge trimming, gutter cleaning and green waste removal in Frankston and across the Mornington Peninsula.",
   "url": "{SITE}/",
   "telephone": "{BIZ['phone_intl']}",
@@ -919,6 +937,8 @@ HOME_FAQS = [
      "Always. Clippings, prunings and hedge trimmings go straight on the trailer and leave with us. You are not left with a pile beside the bin, or waiting on a council hard waste booking. We also take general rubbish removal jobs on their own if you have a shed, garage or yard to clear out."),
     ("Do you offer commercial property maintenance around Frankston?",
      "Yes. We maintain grounds for commercial sites, rental portfolios and body corporate properties across Frankston and the surrounding suburbs, on scheduled visits with consistent presentation between them. Send us the site address and how often you need it attended and we will price it."),
+    ("Is Prestige Property Care the same business as Greenline Services?",
+     "Yes. We changed the name in 2026. The owner, the phone number, the crew and the round are all the same, and so is the work: lawn mowing in Frankston, garden maintenance, hedge trimming, gutter cleaning and green waste removal across the Mornington Peninsula. Our Google Business Profile is still listed under Greenline Services, so the reviews on it were left for this business."),
 ]
 
 HOME_TRAIL = [("Home", "/")]
@@ -1058,7 +1078,7 @@ def page_home():
     <div class="sec-head">
       <span class="eyebrow">What clients say</span>
       <h2>Booked again, and again</h2>
-      <p class="lede">Reviews left on our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google Business Profile</a>, quoted word for word.</p>
+      <p class="lede">Reviews left on our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google Business Profile</a>, quoted word for word. The listing is still titled {BIZ['former_name']}, our former name.</p>
     </div>
     {testimonials()}
   </div>
@@ -1616,6 +1636,8 @@ def page_services():
 ABOUT_FAQS = [
     ("Who is Prestige Property Care?",
      "Prestige Property Care is a lawn, garden and property maintenance business based in Frankston VIC 3199, run by Dave Coelho. It covers lawn mowing, garden maintenance, hedge trimming, gutter cleaning, green waste removal and end-of-lease clean-ups across Frankston and the Mornington Peninsula."),
+    ("Are Prestige Property Care and Greenline Services the same business?",
+     "Yes. Prestige Property Care is the same Frankston lawn and garden business that traded as Greenline Services, with the same owner, the same phone number and the same crew. Only the name has changed. The Google Business Profile, and the reviews on it, are still listed under Greenline Services."),
     ("Are you insured?",
      "Yes. Prestige Property Care carries public liability insurance, and we are happy to provide the certificate of currency to property managers, body corporates and commercial clients who need it on file before work starts."),
     ("Do you use subcontractors?",
@@ -1661,7 +1683,7 @@ def page_about():
       <div class="prose">
         <span class="eyebrow">Our story</span>
         <h2>One person, one trailer, and a round that kept growing</h2>
-        <p><strong>Prestige Property Care is a lawn, garden and property maintenance business operating from Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula.</p>
+        <p><strong>Prestige Property Care is a lawn, garden and property maintenance business operating from Frankston VIC 3199.</strong> It is owned and run by {BIZ['owner']}, and it covers Frankston, the Frankston City suburbs and the Mornington Peninsula. We traded as {BIZ['former_name']} until 2026 &mdash; same owner, same phone number, same crew, new name.</p>
         <p>The business grew the way these ones tend to: one property, then the neighbour, then their sister in Seaford. Nearly all of it came from people telling someone else that we turned up when we said we would. That is not a marketing line, it is just what happens in this trade when most operators do not.</p>
         <p>What has not changed as the round has grown is who does the work. There are no subcontractors and no rotating crews. The person who quotes your property is the person standing in it on the day, which is why nobody ever has to be told twice about the side gate, the dog, or the bed of natives that is not to be trimmed.</p>
         <h2>How we price</h2>
@@ -1705,7 +1727,7 @@ def page_about():
     <div class="sec-head">
       <span class="eyebrow">What clients say</span>
       <h2>The reason the round keeps growing</h2>
-      <p class="lede">Straight from our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google reviews</a>.</p>
+      <p class="lede">Straight from our <a href="{GOOGLE_REVIEWS_URL}" rel="nofollow noopener" target="_blank">Google reviews</a>, still listed under our former name, {BIZ['former_name']}.</p>
     </div>
     {testimonials()}
   </div>
@@ -1722,7 +1744,7 @@ def page_about():
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
+      <div>{map_embed('Map of the Prestige Property Care service area — Frankston, Victoria and the Mornington Peninsula')}</div>
     </div>
   </div>
 </section>
@@ -1808,7 +1830,7 @@ def page_contact():
           <p><strong>Got a deadline?</strong> End-of-lease inspections and pre-sale photography dates get priority. Tell us the date when you call and we will work backwards from it.</p>
         </div>
       </div>
-      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
+      <div>{map_embed('Map of the Prestige Property Care service area — Frankston, Victoria and the Mornington Peninsula')}</div>
     </div>
   </div>
 </section>
@@ -2005,7 +2027,7 @@ def page_thanks():
         </div>
         {nap_list()}
       </div>
-      <div>{map_embed('Map of the Prestige Property Care area around Frankston VIC 3199')}</div>
+      <div>{map_embed('Map of the Prestige Property Care service area — Frankston, Victoria and the Mornington Peninsula')}</div>
     </div>
   </div>
 </section>

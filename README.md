@@ -2,10 +2,10 @@
 
 Static marketing site for **Prestige Property Care**, a lawn, garden and property
 maintenance business at 2/15 St Johns Ave, Frankston VIC 3199. The business traded
-as Greenline Services until the September 2026 rename; the Google Business Profile
-still carries the old name, so the embedded map and the reviews link point at it by
-CID (`?cid=12542257598963737778`) rather than by name — that keeps working after the
-profile is renamed.
+as Greenline Services until the September 2026 rename. Google **rejected** the
+Business Profile rename, so the listing — and the reviews on it — are still titled
+Greenline Services. The site handles that rather than papering over it: see
+**Two names, one business** below.
 
 Built to the SEO / GEO / AEO strategy in the client research document: one page
 per money keyword, no cannibalisation, structured data throughout, and answer-first
@@ -305,9 +305,39 @@ a portrait would be the three highest-value additions.
   and Google-Extended
 
 **Local**
-- Google Business Profile map embedded on the homepage, About and Contact
+- Service-area map embedded on the homepage, About and Contact
 - NAP identical on every page and matching the GBP listing exactly
 - `geo.position` / `ICBM` meta tags
+
+---
+
+## Two names, one business
+
+Google rejected the Business Profile rename, so the listing, the map pin and every
+review on it still read **Greenline Services** while the site reads **Prestige
+Property Care**. A visitor arriving from the listing has to be able to tell these
+are one business, and so does Google. Four things do that:
+
+1. **`alternateName` in the `LocalBusiness` schema** — the machine-readable
+   statement that this entity also goes by Greenline Services.
+2. **`sameAs` and `hasMap` point at the profile by CID**
+   (`?cid=12542257598963737778`) rather than by name, so they survive a rename in
+   either direction and tie the site to that exact listing.
+3. **Visible copy wherever we link to the profile** — the testimonials lede on the
+   homepage and About, the About intro, and the footer line all name the former
+   name. Nobody clicks through to a differently-named listing without warning.
+4. **An FAQ on both the homepage and About** answering "is this the same business"
+   directly, which also lands it in the `FAQPage` schema.
+
+The embedded map used to be the place-based embed the client supplied, which
+renders the profile's own title — "Greenline services" in 14px on a page branded
+Prestige Property Care. It is now the same viewport with the place block removed,
+so it draws the service area and carries no stale label. `GMB_EMBED` in
+`tools/build.py` keeps the original string in a comment: if the rename is ever
+approved, swapping back is one paste.
+
+None of this is a workaround for the listing itself. The name on the profile is
+what Google shows in the map pack, so the rename is still worth appealing.
 
 ---
 
@@ -318,9 +348,14 @@ a portrait would be the three highest-value additions.
 - [ ] Confirm the mailbox is `dave@prestigepropertycare.com.au` — the amendment
       sheet spelled the domain `prestgie…`, which does not resolve, so it is
       treated here as a typo. One line in `BIZ` if it turns out to be real
-- [ ] Rename the Google Business Profile to Prestige Property Care (the map embed
-      and reviews link are CID-based and survive the rename; the profile name is
-      what visitors see in the embed)
+- [ ] Re-apply for the Google Business Profile rename. Google rejected
+      "Prestige Property Care" under its name policy; the usual path is to show
+      the trading name on signage, the ute, invoices and the website, then
+      appeal through Business Profile support. Until it is approved, the
+      listing stays Greenline Services and the site states that openly
+      (see **Two names, one business**)
+- [ ] Eyeball the service-area map on the deployed site. The sandbox this was
+      built in blocks google.com, so the embed could not be rendered here
 - [ ] Confirm which logo option the client wants — `LOGO_MARK` in `tools/build.py`
 - [ ] Enable Form Analytics and Form Submissions in GHL settings
 - [ ] Create the `property_address`, `property_size`, `service_needed` and
