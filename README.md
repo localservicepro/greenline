@@ -209,6 +209,25 @@ on solid white because a transparent dark-green mark disappears on a dark home
 screen. The header and footer use the mark on a white chip so it stays legible
 against both the transparent-over-hero and the scrolled-light header.
 
+### Email logo
+
+Email clients render neither the SVG mark nor a webfont, so the horizontal
+lockup ships as flat PNG for GoHighLevel templates and signatures:
+
+    node tools/gen-email-logo.js
+
+| File | Size | Use |
+|---|---|---|
+| `logo-email-800.png` | 800×240, white | **the one to use** — a 2x asset, set `width="400"` or less |
+| `logo-email-400.png` | 400×120, white | half size |
+| `logo-email-800-transparent.png` | 800×240, alpha | over a coloured header |
+| `logo-email-400-transparent.png` | 400×120, alpha | half size |
+
+Prefer the white-background files in email: a transparent dark-green mark
+vanishes against a dark-mode background, and several clients invert images.
+The generator reads `LOGO_MARK`, so changing the mark and re-running keeps the
+email lockup in step with the site.
+
 ## Images
 
 All photography is the client's own job photos, from the `Compressed` folder in
