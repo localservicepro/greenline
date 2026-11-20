@@ -40,11 +40,8 @@ BIZ = {
     "phone_display": "0466 687 252",
     "phone_link": "+61466687252",
     "phone_intl": "+61 466 687 252",
-    # The amendment sheet wrote this as "Dave@prestgiepropertycare.com.au".
-    # prestgiepropertycare.com.au does not resolve and prestigepropertycare.com.au
-    # does, so the transposed spelling is treated as a typo. If the mailbox really
-    # is on the misspelt domain, change this one line and rebuild.
-    "email": "dave@prestigepropertycare.com.au",
+    # Spelling confirmed by the client on 20 Nov 2026, including the capitals.
+    "email": "Dave@Prestigepropertycare.com.au",
     "owner": "Dave Coelho",
     # The Google Business Profile rename to Prestige Property Care was rejected,
     # so the profile — and therefore the reviews, the map pin and anything Google
@@ -59,10 +56,17 @@ BIZ = {
     "instagram": "https://www.instagram.com/prestigepropertycarefrankston/",
 }
 
-# The logo mark. Three alternatives live in assets/img/logo/ (mark-crest.svg,
-# mark-pleaf.svg, mark-level.svg) — switching the brand over is this one line
-# plus a re-run of tools/gen-icons.py to redraw the favicon and app icons.
-LOGO_MARK = "/assets/img/logo/mark-pleaf.svg"
+# The client's own logo. The artwork is gold on black, so the mark sits on a
+# near-black chip in the header and footer and the app icons are drawn on black
+# too — keyed onto white the gold washes out to pale yellow and loses the
+# metallic shading. mark-tree-512.png is the same artwork at icon size; re-run
+# tools/gen-icons.js after changing either.
+#
+# The supplied artwork's own wordmark reads "PRESTIGE PROPERTY SERVICES". The
+# business name everywhere else — the amendment sheet, the email domain, the
+# Instagram handle — is Prestige Property Care, so only the tree is used here
+# and the name is rendered as live text beside it.
+LOGO_MARK = "/assets/img/logo/mark-tree-120.png"
 
 SUBURBS = [
     "Frankston", "Frankston South", "Frankston North", "Seaford", "Langwarrin",
@@ -150,7 +154,7 @@ IMG_ALT = {
     "lawn-mowing": "Freshly mown back lawn edged along the concrete path, with planted garden beds behind, on a Mornington Peninsula property",
     "gutter-cleaning": "Roof gutter in Frankston packed with gum leaves and bark before a Prestige Property Care gutter clean",
     "garden-maintenance": "Garden bed remulched and re-edged beside a mown lawn during a regular garden maintenance visit in Frankston",
-    "hedge-trimming": "Large hedge cut square and level on every face after hedge trimming in Frankston",
+    "hedge-trimming": "Long boundary hedge trimmed flat along its face beside a mown lawn in Frankston",
     "rubbish-removal": "Backyard cleared back to bare ground in Frankston, with all green waste and rubbish taken away",
     "garden-clean-ups": "Overgrown Frankston backyard with knee-high grass and debris, before an end-of-lease garden clean up",
     "about-dave": "Tidy front garden in Frankston with clipped shrubs, a swept aggregate path and a mown lawn",
@@ -352,7 +356,6 @@ def head(page):
 <link rel="preload" as="style" href="{FONT_HREF}">
 <link rel="stylesheet" href="{FONT_HREF}" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="{FONT_HREF}"></noscript>
-<link rel="icon" href="{LOGO_MARK}" type="image/svg+xml">
 <link rel="icon" href="/assets/img/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="/assets/img/icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
@@ -1767,7 +1770,7 @@ def page_about():
 # ================================================================ CONTACT
 CONTACT_FAQS = [
     ("How do I get a quote from Prestige Property Care?",
-     "Call 0466 687 252, email dave@prestigepropertycare.com.au, or send the form on this page with your suburb and what you need looked at. Quotes are free, given as a fixed price rather than an hourly rate, and there is no obligation to book once you have the number."),
+     "Call 0466 687 252, email Dave@Prestigepropertycare.com.au, or send the form on this page with your suburb and what you need looked at. Quotes are free, given as a fixed price rather than an hourly rate, and there is no obligation to book once you have the number."),
     ("How quickly do you respond?",
      "Calls are the fastest way to get an answer and are usually picked up or returned the same day. Form and email enquiries are answered within one business day. If you have a hard deadline &mdash; an inspection, a photography date, a storm on the way &mdash; say so and we will prioritise it."),
     ("What are your hours?",

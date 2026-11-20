@@ -219,7 +219,7 @@
  },
  "hedge-trimming": {
   "file": "hedge-trimming.jpg",
-  "h": 1200,
+  "h": 1125,
   "srcset": [
    [
     480,
@@ -234,11 +234,11 @@
     "hedge-trimming-1200.jpg"
    ],
    [
-    1600,
+    1500,
     "hedge-trimming.jpg"
    ]
   ],
-  "w": 1600
+  "w": 1500
  },
  "hero": {
   "file": "hero.jpg",

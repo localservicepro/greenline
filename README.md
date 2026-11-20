@@ -185,48 +185,55 @@ was darkened from `#87908A` to `#666F69` for this reason — the old value was 3
 
 ### Logo
 
-The old Greenline mark (leaf pair in a gradient ring) went with the old name. Three
-replacement marks are drawn as SVG in `assets/img/logo/`, all flat colour, no
-gradients, each legible down to a 24px favicon and in one colour:
+The client's own artwork, supplied 20 Nov 2026: a gold tree of life over a gold
+wordmark on black, kept in full at `assets/img/logo/logo-supplied.png`. The three
+SVG concepts drawn before it are gone from the tree; git history has them.
 
-| File | Direction |
+Only the **tree** is used on the site. The supplied wordmark reads "PRESTIGE
+PROPERTY **SERVICES**", while the business name everywhere else — the amendment
+sheet, the email domain, the Instagram handle, every page of this site — is
+Prestige Property **Care**. Until that is settled the name is rendered as live
+text beside the mark, so the site never prints the contradiction.
+
+| File | Use |
 |---|---|
-| `mark-pleaf.svg` | **shipped** — single-stroke `P` whose bowl comes to a leaf point |
-| `mark-crest.svg` | a shield banded with mowing stripes |
-| `mark-level.svg` | three hedges cut to one level line over a strip of lawn |
+| `mark-tree-120.png` | header and footer, a 38px chip |
+| `mark-tree-512.png` | source for the favicon and app icons |
+| `logo-supplied.png` | the artwork as supplied, wordmark included |
 
-A fourth option is wordmark-only: no mark at all, "PRESTIGE" in Fraunces over a rule
-with "PROPERTY CARE" letterspaced under it.
+The tree was cut from the artwork and keyed to transparency on luminance rather
+than a threshold, which keeps the soft edges of the gold without a dark halo.
+Everything it sits on is near-black (`--brand-black`, `#0D0D0D`): the header and
+footer chip in both header states, and the app icons. Keyed onto white the gold
+goes pale yellow and loses its shading, so a white chip is not an option here.
 
-Switching mark is one line — `LOGO_MARK` in `tools/build.py` — then:
+Changing the mark is one line — `LOGO_MARK` in `tools/build.py` — then:
 
-    node tools/gen-icons.js && python3 tools/build.py
+    node tools/gen-icons.js && node tools/gen-email-logo.js && python3 tools/build.py
 
 `tools/gen-icons.js` redraws `favicon-32`, `apple-touch-icon`, `icon-192` and
-`icon-512` from whichever mark `LOGO_MARK` names. Browsers get the SVG itself as the
-tab icon; the PNGs are the fallback and the iOS home-screen icon, and they are drawn
-on solid white because a transparent dark-green mark disappears on a dark home
-screen. The header and footer use the mark on a white chip so it stays legible
-against both the transparent-over-hero and the scrolled-light header.
+`icon-512`; it takes SVG or PNG, preferring a `-512` sibling when `LOGO_MARK`
+names a small file.
 
 ### Email logo
 
-Email clients render neither the SVG mark nor a webfont, so the horizontal
-lockup ships as flat PNG for GoHighLevel templates and signatures:
+Email clients do not load a webfont, so the horizontal lockup ships as flat PNG
+for GoHighLevel templates and signatures:
 
     node tools/gen-email-logo.js
 
 | File | Size | Use |
 |---|---|---|
-| `logo-email-800.png` | 800×240, white | **the one to use** — a 2x asset, set `width="400"` or less |
-| `logo-email-400.png` | 400×120, white | half size |
-| `logo-email-800-transparent.png` | 800×240, alpha | over a coloured header |
+| `logo-email-800.png` | 800×240, black | **the one to use** — a 2x asset, set `width="400"` or less |
+| `logo-email-400.png` | 400×120, black | half size |
+| `logo-email-800-transparent.png` | 800×240, alpha | over another dark panel |
 | `logo-email-400-transparent.png` | 400×120, alpha | half size |
 
-Prefer the white-background files in email: a transparent dark-green mark
-vanishes against a dark-mode background, and several clients invert images.
-The generator reads `LOGO_MARK`, so changing the mark and re-running keeps the
-email lockup in step with the site.
+The ground is the brand's near-black, which is what the gold was drawn for. The
+transparent files are for placing on another dark panel, not on a white email
+body. The lockup says "Property Care" to match the site and the domain; if the
+artwork's "Property Services" turns out to be the real name, that word is one
+line in `tools/gen-email-logo.js` and a rebuild of the site copy.
 
 ## Images
 
@@ -364,9 +371,8 @@ what Google shows in the map pack, so the rename is still worth appealing.
 
 - [ ] Point `prestigepropertycare.com.au` at the host and enable HTTPS (the domain
       resolves already; `SITE` in `tools/build.py` is set to it)
-- [ ] Confirm the mailbox is `dave@prestigepropertycare.com.au` — the amendment
-      sheet spelled the domain `prestgie…`, which does not resolve, so it is
-      treated here as a typo. One line in `BIZ` if it turns out to be real
+- [ ] Settle the trading name: the supplied logo says "Prestige Property
+      **Services**", everything else says "Prestige Property **Care**"
 - [ ] Re-apply for the Google Business Profile rename. Google rejected
       "Prestige Property Care" under its name policy; the usual path is to show
       the trading name on signage, the ute, invoices and the website, then
@@ -375,7 +381,6 @@ what Google shows in the map pack, so the rename is still worth appealing.
       (see **Two names, one business**)
 - [ ] Eyeball the service-area map on the deployed site. The sandbox this was
       built in blocks google.com, so the embed could not be rendered here
-- [ ] Confirm which logo option the client wants — `LOGO_MARK` in `tools/build.py`
 - [ ] Enable Form Analytics and Form Submissions in GHL settings
 - [ ] Create the `property_address`, `property_size`, `service_needed` and
       `job_notes` custom fields in GHL
