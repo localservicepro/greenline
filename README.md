@@ -195,33 +195,47 @@ behind the fixed header rather than against the photo.
 ### Logo
 
 The client's own artwork, supplied 20 Nov 2026: a gold tree of life over a gold
-wordmark on black, kept in full at `assets/img/logo/logo-supplied.png`. The three
-SVG concepts drawn before it are gone from the tree; git history has them.
-
-Only the **tree** is used on the site. The supplied wordmark reads "PRESTIGE
-PROPERTY **SERVICES**", and the name is **Prestige Property Care** — settled
-20 Nov 2026 and not open for revisiting: the site is already submitted to
-Google, and the name is carried by the domain, the `LocalBusiness` schema, the
-page titles, the email address and the Instagram handle. Renaming again would
-churn every one of those and cost the indexing already under way. So the name
-is rendered as live text beside the mark and the artwork's wordmark is never
-shown — do not "correct" the site to match the logo.
+wordmark on black. It arrived with "PRESTIGE PROPERTY **SERVICES**" on its
+second line, and the trading name is Prestige Property **Care** — the client's
+domain, and settled rather than left open, since the site is already submitted
+to Google and the name is carried by the canonical domain, the `LocalBusiness`
+schema, every page title, the email address and the Instagram handle. So the
+**artwork** was corrected to match the name, not the other way round.
 
 | File | Use |
 |---|---|
+| `logo-lockup.png` | the corrected lockup, gold on black — the primary logo |
+| `logo-lockup-transparent.png` | the same keyed to alpha, for other dark grounds |
+| `logo-email-800.png` / `-400` | horizontal arrangement for email, with alpha twins |
 | `mark-tree-120.png` | header and footer, a 38px chip |
 | `mark-tree-512.png` | source for the favicon and app icons |
-| `logo-supplied.png` | the artwork as supplied, wordmark included |
+| `logo-supplied.png` | the untouched original, kept for reference |
 
-The tree was cut from the artwork and keyed to transparency on luminance rather
-than a threshold, which keeps the soft edges of the gold without a dark halo.
-Everything it sits on is near-black (`--brand-black`, `#0D0D0D`): the header and
-footer chip in both header states, and the app icons. Keyed onto white the gold
-goes pale yellow and loses its shading, so a white chip is not an option here.
+Rebuilding the lot:
+
+    node tools/relabel-wordmark.js && python3 tools/gen-logo-assets.py
+
+The tree and the PRESTIGE wordmark are never redrawn. Only the second line is:
+Montserrat Bold — which matches the artwork's face — at the original's own 58px
+cap height, tracked so PROPERTY measures the same 494px of ink it does in the
+supplied file, and painted with a metallic ramp sampled row by row out of the
+original letters, so the gold matches rather than approximates. The flanking
+rules grow to hold the line's full width, since the shorter word leaves slack.
+The measurements are constants at the top of `tools/gen-logo-assets.py`; they
+are specific to the 1445×1088 artwork and have to be re-measured if it is ever
+resupplied.
+
+**On the site, only the tree is used** — the business name is live text beside
+it, which keeps it selectable, translatable and indexable. The tree is keyed to
+transparency on luminance rather than a threshold, which holds the soft edges of
+the gold without a dark halo, and everything it sits on is near-black
+(`--brand-black`, `#0D0D0D`): the header and footer chip in both header states,
+and the app icons. Keyed onto white the gold goes pale yellow and loses its
+shading, so a white chip is not an option here.
 
 Changing the mark is one line — `LOGO_MARK` in `tools/build.py` — then:
 
-    node tools/gen-icons.js && node tools/gen-email-logo.js && python3 tools/build.py
+    node tools/gen-icons.js && python3 tools/build.py
 
 `tools/gen-icons.js` redraws `favicon-32`, `apple-touch-icon`, `icon-192` and
 `icon-512`; it takes SVG or PNG, preferring a `-512` sibling when `LOGO_MARK`
@@ -229,10 +243,8 @@ names a small file.
 
 ### Email logo
 
-Email clients do not load a webfont, so the horizontal lockup ships as flat PNG
-for GoHighLevel templates and signatures:
-
-    node tools/gen-email-logo.js
+Email clients will not render the lockup from parts, so the horizontal
+arrangement ships as flat PNG for GoHighLevel templates and signatures:
 
 | File | Size | Use |
 |---|---|---|
@@ -243,8 +255,7 @@ for GoHighLevel templates and signatures:
 
 The ground is the brand's near-black, which is what the gold was drawn for. The
 transparent files are for placing on another dark panel, not on a white email
-body. The lockup says "Property Care", which is the trading name — see the Logo
-section above.
+body.
 
 ## Images
 
