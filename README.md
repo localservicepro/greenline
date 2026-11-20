@@ -1,7 +1,11 @@
-# Greenline Services — website
+# Prestige Property Care — website
 
-Static marketing site for **Greenline Services**, a lawn, garden and property
-maintenance business at 2/15 St Johns Ave, Frankston VIC 3199.
+Static marketing site for **Prestige Property Care**, a lawn, garden and property
+maintenance business at 2/15 St Johns Ave, Frankston VIC 3199. The business traded
+as Greenline Services until the September 2026 rename. Google **rejected** the
+Business Profile rename, so the listing — and the reviews on it — are still titled
+Greenline Services. The site handles that rather than papering over it: see
+**Two names, one business** below.
 
 Built to the SEO / GEO / AEO strategy in the client research document: one page
 per money keyword, no cannibalisation, structured data throughout, and answer-first
@@ -75,12 +79,16 @@ fields:
 | Email | `email` | `{{contact.email}}` |
 | Phone | `phone` | `{{contact.phone}}` |
 | Property address | `property_address` | `{{contact.property_address}}` |
+| Property size | `property_size` | `{{contact.property_size}}` |
 | Services needed | `service_needed` | `{{contact.service_needed}}` |
 | Job notes | `job_notes` | `{{contact.job_notes}}` |
 
-`property_address`, `service_needed` and `job_notes` are custom fields — create
-them in **Settings → Custom Fields** in GHL before the first submission, or
-those three values will be dropped while name, email and phone still land.
+`property_address`, `property_size`, `service_needed` and `job_notes` are custom
+fields — create them in **Settings → Custom Fields** in GHL before the first
+submission, or those four values are dropped while name, email and phone still
+land. Create `property_size` as a **Text** field: it is a dropdown on the site,
+and a GHL dropdown would reject any label that does not match its options
+character for character.
 
 The GHL tracking script is in the `<head>` of every page. In GHL, enable
 **Form Analytics** and **Form Submissions** in Settings or nothing is recorded.
@@ -99,6 +107,26 @@ automated check for them (see *Verifying* below):
 deliberately has no submit handler on the form. Adding one that calls
 `preventDefault()` on a valid submit will silently stop every lead reaching the
 CRM — the form will still look like it works.
+
+### Two forms per page
+
+Most pages carry two copies of the form: the inline one, and the quote popup
+(`#quote-modal`) that the header CTA and section CTAs open. Both are real
+`<form>` elements in the DOM with the same six field names, so GHL captures
+whichever is submitted.
+
+Their ids are prefixed (`qf-` inline, `qm-` modal) so they never collide —
+`tools/check.py` fails on duplicate ids and validates *every* form on a page,
+not just the first.
+
+The contact page is the exception: its form sits in the hero, so it ships no
+modal and the header CTA scrolls to the form instead. Any `data-quote-open`
+trigger falls back gracefully — modal if present, otherwise scroll to `#quote`,
+otherwise follow the link to `/contact/`.
+
+The popup is keyboard-accessible: `role="dialog"`, `aria-modal`, focus moves to
+the first field on open, Tab is trapped inside it, Escape and the backdrop
+close it, and focus returns to the trigger.
 
 ### Where submissions go
 
@@ -134,31 +162,169 @@ to load — a real endpoint gives you a second copy.
 the request, sets the callback expectation, and cross-sells three services.
 It is a clean conversion trigger for a GHL workflow or a GA4 goal.
 
-## Images — one action needed before launch
+## Brand
 
-The 12 photographs were generated with Recraft V4.1 and currently load from the
-generator's CDN. **Before this site goes live, pull them onto the client's own
-domain:**
+Palette taken from the client's logo — a gold tree on black. The greens the site
+launched with came from the Greenline artwork and went with that name.
 
-```bash
-bash tools/localise-images.sh
-python3 tools/build.py
-```
+| Token | Hex | Role |
+|---|---|---|
+| `--gold` / `--brand-gold` | `#E0B23C` | the artwork's mid gold: accents on dark, primary button fill |
+| `--gold-l` | `#F0C95C` | hover for the above |
+| `--bronze` | `#7A5E12` | the artwork's shadow tone: accents and solid fills on light |
+| `--bronze-d` | `#5E4810` | hover for the above |
+| `--ink` / `--brand-black` | `#101010` / `#0D0D0D` | dark sections, footer, the logo chip |
+| `--sand` / `--sand-2` | `#F5F2E9` / `#E9E3D3` | light grounds |
+| `--brand-char` / `--text` | `#262626` | body copy |
 
-That downloads everything into `assets/img/`, flips `USE_LOCAL_IMAGES` in the
-build script, and rebuilds so nothing points off-domain. Recommended follow-up
-for Core Web Vitals — convert to WebP and resize the hero:
+The gold is split in two because one value cannot serve both grounds. `#E0B23C`
+is **9.61:1** on `--ink` and **1.77:1** on `--sand` — fine on black, failing WCAG
+AA outright on cream. So anything gold that sits on a light surface (eyebrows,
+service links, bullets, hover borders) uses `--bronze`, which is **6.11:1** on
+white and **5.46:1** on sand, and carries white text at **6.11:1** when it is a
+fill. The two buttons invert each other: the primary CTA is gold with near-black
+type, the form's submit is near-black with gold type.
 
-```bash
-for f in assets/img/*.png; do cwebp -q 82 "$f" -o "${f%.png}.webp"; done
-```
+Every text/background pair on the rendered pages passes WCAG AA; the ratios are
+checked rather than eyeballed, and axe-core reports zero violations across six
+pages at mobile and desktop. Over the hero the header is transparent, so it
+carries a top-down scrim: the white nav needs the darkening on a light photo,
+and without it an auditor measures that text against the cream page background
+behind the fixed header rather than against the photo.
 
-Alt text for every image lives in `IMG_ALT` in `tools/build.py` and is written
-for a person, with the keyword carried naturally.
+### Logo
 
----
+The client's own artwork, supplied 20 Nov 2026: a gold tree of life over a gold
+wordmark on black. It arrived with "PRESTIGE PROPERTY **SERVICES**" on its
+second line, and the trading name is Prestige Property **Care** — the client's
+domain, and settled rather than left open, since the site is already submitted
+to Google and the name is carried by the canonical domain, the `LocalBusiness`
+schema, every page title, the email address and the Instagram handle. So the
+**artwork** was corrected to match the name, not the other way round.
 
-## SEO / GEO / AEO implementation
+| File | Use |
+|---|---|
+| `logo-lockup.png` | the corrected lockup, gold on black — the primary logo |
+| `logo-lockup-transparent.png` | the same keyed to alpha, for other dark grounds |
+| `logo-email-800.png` / `-400` | horizontal arrangement for email, with alpha twins |
+| `mark-tree-120.png` | header and footer, a 38px chip |
+| `mark-tree-512.png` | source for the favicon and app icons |
+| `logo-supplied.png` | the untouched original, kept for reference |
+
+Rebuilding the lot:
+
+    node tools/relabel-wordmark.js && python3 tools/gen-logo-assets.py
+
+The tree and the PRESTIGE wordmark are never redrawn. Only the second line is:
+Montserrat Bold — which matches the artwork's face — at the original's own 58px
+cap height, tracked so PROPERTY measures the same 494px of ink it does in the
+supplied file, and painted with a metallic ramp sampled row by row out of the
+original letters, so the gold matches rather than approximates. The flanking
+rules grow to hold the line's full width, since the shorter word leaves slack.
+The measurements are constants at the top of `tools/gen-logo-assets.py`; they
+are specific to the 1445×1088 artwork and have to be re-measured if it is ever
+resupplied.
+
+**On the site, only the tree is used** — the business name is live text beside
+it, which keeps it selectable, translatable and indexable. The tree is keyed to
+transparency on luminance rather than a threshold, which holds the soft edges of
+the gold without a dark halo, and everything it sits on is near-black
+(`--brand-black`, `#0D0D0D`): the header and footer chip in both header states,
+and the app icons. Keyed onto white the gold goes pale yellow and loses its
+shading, so a white chip is not an option here.
+
+Changing the mark is one line — `LOGO_MARK` in `tools/build.py` — then:
+
+    node tools/gen-icons.js && python3 tools/build.py
+
+`tools/gen-icons.js` redraws `favicon-32`, `apple-touch-icon`, `icon-192` and
+`icon-512`; it takes SVG or PNG, preferring a `-512` sibling when `LOGO_MARK`
+names a small file.
+
+### Email logo
+
+Email clients will not render the lockup from parts, so the horizontal
+arrangement ships as flat PNG for GoHighLevel templates and signatures:
+
+| File | Size | Use |
+|---|---|---|
+| `logo-email-800.png` | 800×240, black | **the one to use** — a 2x asset, set `width="400"` or less |
+| `logo-email-400.png` | 400×120, black | half size |
+| `logo-email-800-transparent.png` | 800×240, alpha | over another dark panel |
+| `logo-email-400-transparent.png` | 400×120, alpha | half size |
+
+The ground is the brand's near-black, which is what the gold was drawn for. The
+transparent files are for placing on another dark panel, not on a white email
+body.
+
+## Images
+
+All photography is the client's own job photos, from the `Compressed` folder in
+their Google Drive, resized and compressed here (~4.9 MB for 12 images). The lawn
+mowing photo is the later replacement the client supplied separately, cropped to the
+same 4:3 as the other service shots.
+Nothing is stock or generated.
+
+Every image is matched to the service it sits on:
+
+| Slot | Photo | What it shows |
+|---|---|---|
+| Homepage hero | `20260727_153633` | mown back lawn, stepping stones, clipped beds |
+| Lawn mowing | `20260720_123526` | front lawn mown and edged to the footpath |
+| Gutter cleaning | `20260326_093749` | gutter packed with gum leaves, before the clean |
+| Garden maintenance | `20260615_145352` | bed remulched and re-edged beside a mown lawn |
+| Hedge trimming | `20260617_110253` | large hedge cut square and level |
+| Rubbish removal | `20260623_092725` | yard cleared back to bare ground, waste gone |
+| Garden clean-ups | `20260526_113940` | overgrown yard with debris, before the clean-up |
+| About | `20260724_150649` | finished front garden, clipped shrubs, swept path |
+| Work gallery | `20260311_145636`, `20260528_110901`, `20260730_152328` | mown lawn, pool-surround topiary, maintained back garden |
+
+Service images render at 1600px because they double as page-hero backgrounds;
+gallery images at 1200px. Nothing is upscaled beyond its source.
+
+Alt text lives in `IMG_ALT` in `tools/build.py` and describes what is actually
+in each frame.
+
+### Before / after slider
+
+The homepage recent-work section is a before/after comparison slider built from
+three genuine pairs found in the Drive — same property, same job, photographed
+on arrival and on leaving:
+
+| Pair | Before | After | Job |
+|---|---|---|---|
+| 1 | `20260526_113940` | `20260526_144123` | knee-high grass and dumped sheeting cleared |
+| 2 | `20260629_103620` | `20260629_112741` | overgrown lawn around decking mown and edged |
+| 3 | `20260708_093808` | `20260708_110738` | garden bed cut back to its rock edging |
+
+Pairs were confirmed by matching landmarks across each pair (the same tree,
+fence, decking and paving appear in both frames), not by filename or timestamp
+alone. The framing shifts slightly between shots because they are handheld phone
+photos — normal for trade before/afters.
+
+How it works:
+
+- The wipe is an `<input type="range">` layered invisibly over the frame, so
+  keyboard, touch and assistive tech all work with no extra code
+- The AFTER photo is the base layer and the BEFORE is clipped over it with
+  `clip-path`, so the handle reads left = before, right = after, and neither
+  image squashes as the divider moves
+- The track is a native CSS scroll-snap container — swipe and scroll work with
+  JavaScript disabled; the arrows and dots are enhancement only
+
+The six comparison images add ~1.4 MB, but all of them are lazy-loaded well
+below the fold. Only the hero (544 KB) loads before first paint. WebP was
+tested and came out 1% smaller than JPEG on these frames — grass and foliage
+are high-entropy and compress poorly either way — so they stay JPEG.
+
+**Still missing from the photo set:** no shot of mowing in progress (a mower in
+frame), no loaded trailer or green waste being carted, and no photo of Dave, the
+crew or a branded vehicle. The rubbish removal page therefore uses a cleared-yard
+result rather than a removal in progress, and the About page uses a finished
+property rather than a portrait. A mower-in-action shot, a loaded-trailer shot and
+a portrait would be the three highest-value additions.
+
+## SEO / GEO / AEO implementation## SEO / GEO / AEO implementation## SEO / GEO / AEO implementation
 
 **On-page**
 - One `<h1>` per page, containing the target keyword
@@ -187,20 +353,57 @@ for a person, with the keyword carried naturally.
   and Google-Extended
 
 **Local**
-- Google Business Profile map embedded on the homepage, About and Contact
+- Service-area map embedded on the homepage, About and Contact
 - NAP identical on every page and matching the GBP listing exactly
 - `geo.position` / `ICBM` meta tags
 
 ---
 
+## Two names, one business
+
+Google rejected the Business Profile rename, so the listing, the map pin and every
+review on it still read **Greenline Services** while the site reads **Prestige
+Property Care**. A visitor arriving from the listing has to be able to tell these
+are one business, and so does Google. Four things do that:
+
+1. **`alternateName` in the `LocalBusiness` schema** — the machine-readable
+   statement that this entity also goes by Greenline Services.
+2. **`sameAs` and `hasMap` point at the profile by CID**
+   (`?cid=12542257598963737778`) rather than by name, so they survive a rename in
+   either direction and tie the site to that exact listing.
+3. **Visible copy wherever we link to the profile** — the testimonials lede on the
+   homepage and About, the About intro, and the footer line all name the former
+   name. Nobody clicks through to a differently-named listing without warning.
+4. **An FAQ on both the homepage and About** answering "is this the same business"
+   directly, which also lands it in the `FAQPage` schema.
+
+The embedded map used to be the place-based embed the client supplied, which
+renders the profile's own title — "Greenline services" in 14px on a page branded
+Prestige Property Care. It is now the same viewport with the place block removed,
+so it draws the service area and carries no stale label. `GMB_EMBED` in
+`tools/build.py` keeps the original string in a comment: if the rename is ever
+approved, swapping back is one paste.
+
+None of this is a workaround for the listing itself. The name on the profile is
+what Google shows in the map pack, so the rename is still worth appealing.
+
+---
+
 ## Launch checklist
 
-- [ ] Register `greenlineservices.com.au` and enable HTTPS
-- [ ] Confirm `SITE` in `tools/build.py` matches the live domain, then rebuild
-- [ ] Run `tools/localise-images.sh` so no images load from an external CDN
+- [ ] Point `prestigepropertycare.com.au` at the host and enable HTTPS (the domain
+      resolves already; `SITE` in `tools/build.py` is set to it)
+- [ ] Re-apply for the Google Business Profile rename. Google rejected
+      "Prestige Property Care" under its name policy; the usual path is to show
+      the trading name on signage, the ute, invoices and the website, then
+      appeal through Business Profile support. Until it is approved, the
+      listing stays Greenline Services and the site states that openly
+      (see **Two names, one business**)
+- [ ] Eyeball the service-area map on the deployed site. The sandbox this was
+      built in blocks google.com, so the embed could not be rendered here
 - [ ] Enable Form Analytics and Form Submissions in GHL settings
-- [ ] Create the `property_address`, `service_needed` and `job_notes` custom
-      fields in GHL
+- [ ] Create the `property_address`, `property_size`, `service_needed` and
+      `job_notes` custom fields in GHL
 - [ ] Point `FORM_ACTION` at a real form endpoint so leads also arrive by email
       and are not carried in a query string
 - [ ] Submit a live test and confirm the contact appears in GHL with all six
@@ -210,6 +413,128 @@ for a person, with the keyword carried naturally.
 - [ ] Connect GA4; set quote-form submits and `tel:` taps as conversion events
 - [ ] Add the website URL to the Google Business Profile
 - [ ] Test the rendered schema in Google's Rich Results Test
+
+## Address handling
+
+The client does not want the street address on the pages. Visitors see
+**Frankston VIC 3199** and "Mobile service — we come to you"; the street address
+appears in exactly one place:
+
+```
+index.html, about/, contact/  ->  LocalBusiness JSON-LD, PostalAddress.streetAddress
+```
+
+That is the legitimate way to do this. JSON-LD is machine-readable structured
+data that sits in the page source and is not rendered — it is what search engines
+read for NAP. Putting the address in hidden text (`display:none`, a
+`.visually-hidden` span, white-on-white) to feed crawlers while keeping it from
+visitors is **cloaking**, and it risks a manual action. Do not do it.
+
+Because JSON-LD is now the only carrier for the address, the three pages a
+crawler looks to for NAP — home, About and Contact — each define the full
+`LocalBusiness` entity rather than only referencing it by `@id`.
+
+`tools/check.py` enforces both sides of this and fails the build on either
+mistake:
+
+- the street address appearing anywhere in visible markup
+- the street address missing from the JSON-LD on home, About or Contact
+
+Both failure modes were tested by deliberately reintroducing them.
+
+One thing to be aware of: the embedded Google map still pins the business, and
+the Google Business Profile itself is public, so the address remains findable
+through Google. If the client wants it genuinely private, the GBP needs to be
+switched to a service-area business with the address hidden — that is a change
+in Google, not on the site.
+
+## Accessibility
+
+Audited with axe-core (WCAG 2.0/2.1/2.2 A + AA plus best practice) at 412px and
+1350px on every page. **0 violating nodes.** Re-run with:
+
+```bash
+node a11y.js            # see tools/ notes; axe-core against the local server
+```
+
+Issues found and fixed after the PageSpeed "agentic browsing" report:
+
+| Audit | Cause | Fix |
+|---|---|---|
+| `aria-prohibited-attr` | `<div class="stars" aria-label="…">` — a bare div has no role, so it cannot carry `aria-label` | added `role="img"` |
+| `aria-required-children` | carousel dots wrapped in `role="tablist"`, which requires `role="tab"` children | they are not tabs — swapped to `role="group"` |
+| `target-size` | the slider dots were 9px buttons | button is now a 24px target with the 9px dot drawn inside it |
+| `color-contrast` | footer legal line at `rgba(255,255,255,.45)` on `#0C2A12` (~3.4:1) | raised to `.66` |
+| `heading-order` | footer columns were `<h4>` straight after an `<h2>`; the quote card was `<h3>` straight after the `<h1>` on Contact | both promoted to `<h2>` with the styling kept |
+| `region` | the hero, trust bar and CTA band sat outside any landmark, because each page opened `<main>` partway down | `render()` now wraps the whole body in one `<main id="main">` |
+
+## Testimonials
+
+The four testimonials are **real reviews from the Google Business Profile**,
+quoted verbatim, attributed by name and labelled "Google review", with a link
+to the profile. They replaced placeholder text that was written during the
+build.
+
+Do not add invented testimonials. Fabricated reviews breach Australian Consumer
+Law and the ACCC targets them specifically. `TESTIMONIALS` in `tools/build.py`
+carries a comment saying so.
+
+No `Review` or `AggregateRating` schema is attached, deliberately. Google treats
+self-serving review markup on a business's own site as ineligible for rich
+results, and marking it up can attract a manual action.
+
+## Performance
+
+Mobile-first, measured rather than guessed. What a 412px phone downloads:
+
+| | Before | After |
+|---|---|---|
+| Initial load (no scroll) | ~1.1 MB | **277 KB** |
+| Hero image | 544 KB | **75 KB** |
+| Whole page, fully scrolled | 2.1 MB | **1.4 MB** |
+
+Local Lighthouse (mobile emulation): performance 99, CLS 0, TBT 0 ms.
+
+What was done:
+
+- **Responsive images.** `tools/gen-images.py` emits 480/800/1200/1600px
+  variants plus `assets/img/manifest.json`; `tools/build.py` reads the manifest
+  and writes `srcset` with a per-slot `sizes`. Phones were downloading 1600–2000px
+  files for a 412px screen. The 800px step sits just above what a 412px phone at
+  1.75x needs (721px), so mobile stops jumping to a 960px file it never uses.
+- **Correct intrinsic dimensions.** Every `<img>` previously declared
+  `width="1200" height="900"` regardless of the actual file — wrong on the hero
+  (16:9), the About photo (3:2) and the logo. Now taken from the manifest, so the
+  browser reserves the right box. CLS measured at 0 on every page.
+- **Unblocked the head.** The GHL tracking script had no `defer` and was
+  render-blocking; the font stylesheet was blocking too. The script is deferred
+  (it still loads long before anyone can submit) and fonts load via
+  `preload` + `media="print"` swap with a `<noscript>` fallback.
+- **Trimmed the font request.** Dropped Fraunces 400 and Karla 300 — declared in
+  the URL, used by nothing.
+- **Preloaded the LCP image** per page, with `imagesrcset` so the preload matches
+  the variant the browser picks.
+- **Logo.** The header rendered a 512px, 90 KB PNG in a 30px slot. Now a 9 KB
+  120px file; the 512px original is kept for the PWA icons.
+- **Minified CSS** into `site.min.css`. The minifier deliberately leaves spaces
+  around `+` and `-` alone, because the stylesheet uses `calc(100% - var(--pos))`
+  and stripping those breaks it silently. Verified by comparing computed styles
+  and bounding boxes for 2,519 elements across four renders — zero differences.
+- **`vercel.json`** sets a one-year immutable cache on `/assets/*` plus a few
+  security headers. Routing is left alone deliberately: the deployment already
+  resolves directory URLs correctly, and adding `cleanUrls`/`trailingSlash` would
+  change that.
+
+Regenerate variants after adding or replacing any photo:
+
+```bash
+python3 tools/gen-images.py && python3 tools/build.py && python3 tools/check.py
+```
+
+Still on the table if more is needed: a click-to-load facade for the Google Maps
+embed (it is lazy and below the fold, so it does not affect the mobile score much,
+but it is the heaviest third party on the site), and self-hosting the two fonts to
+remove the `fonts.googleapis.com` round trip entirely.
 
 ## Verifying
 
