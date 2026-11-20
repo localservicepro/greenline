@@ -199,10 +199,13 @@ wordmark on black, kept in full at `assets/img/logo/logo-supplied.png`. The thre
 SVG concepts drawn before it are gone from the tree; git history has them.
 
 Only the **tree** is used on the site. The supplied wordmark reads "PRESTIGE
-PROPERTY **SERVICES**", while the business name everywhere else — the amendment
-sheet, the email domain, the Instagram handle, every page of this site — is
-Prestige Property **Care**. Until that is settled the name is rendered as live
-text beside the mark, so the site never prints the contradiction.
+PROPERTY **SERVICES**", and the name is **Prestige Property Care** — settled
+20 Nov 2026 and not open for revisiting: the site is already submitted to
+Google, and the name is carried by the domain, the `LocalBusiness` schema, the
+page titles, the email address and the Instagram handle. Renaming again would
+churn every one of those and cost the indexing already under way. So the name
+is rendered as live text beside the mark and the artwork's wordmark is never
+shown — do not "correct" the site to match the logo.
 
 | File | Use |
 |---|---|
@@ -240,9 +243,8 @@ for GoHighLevel templates and signatures:
 
 The ground is the brand's near-black, which is what the gold was drawn for. The
 transparent files are for placing on another dark panel, not on a white email
-body. The lockup says "Property Care" to match the site and the domain; if the
-artwork's "Property Services" turns out to be the real name, that word is one
-line in `tools/gen-email-logo.js` and a rebuild of the site copy.
+body. The lockup says "Property Care", which is the trading name — see the Logo
+section above.
 
 ## Images
 
@@ -380,8 +382,6 @@ what Google shows in the map pack, so the rename is still worth appealing.
 
 - [ ] Point `prestigepropertycare.com.au` at the host and enable HTTPS (the domain
       resolves already; `SITE` in `tools/build.py` is set to it)
-- [ ] Settle the trading name: the supplied logo says "Prestige Property
-      **Services**", everything else says "Prestige Property **Care**"
 - [ ] Re-apply for the Google Business Profile rename. Google rejected
       "Prestige Property Care" under its name policy; the usual path is to show
       the trading name on signage, the ute, invoices and the website, then

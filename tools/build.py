@@ -63,9 +63,12 @@ BIZ = {
 # tools/gen-icons.js after changing either.
 #
 # The supplied artwork's own wordmark reads "PRESTIGE PROPERTY SERVICES". The
-# business name everywhere else — the amendment sheet, the email domain, the
-# Instagram handle — is Prestige Property Care, so only the tree is used here
-# and the name is rendered as live text beside it.
+# trading name is Prestige Property Care — the client's domain, and settled on
+# 20 Nov 2026 rather than left open: the site is already submitted to Google,
+# and the name is carried by the domain, the LocalBusiness schema, every page
+# title, the email address and the Instagram handle. So only the tree is used
+# here and the name is rendered as live text beside it. Do not change the site
+# copy to match the artwork.
 LOGO_MARK = "/assets/img/logo/mark-tree-120.png"
 
 SUBURBS = [
