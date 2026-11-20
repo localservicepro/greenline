@@ -164,24 +164,33 @@ It is a clean conversion trigger for a GHL workflow or a GA4 goal.
 
 ## Brand
 
-Palette sampled from the original brand artwork and kept through the rename — the
-new mark is drawn in it:
+Palette taken from the client's logo — a gold tree on black. The greens the site
+launched with came from the Greenline artwork and went with that name.
 
-| Token | Hex | Source |
+| Token | Hex | Role |
 |---|---|---|
-| `--brand-leaf` / `--moss` | `#19551D` | deep green of the leaves |
-| `--brand-fresh` | `#498526` | the ring / grass swoosh |
-| `--brand-char` / `--text` | `#262626` | "LINE" in the wordmark |
-| `--fern` | `#6FB93A` | lightened tint of the ring green |
-| `--ink` | `#0C2A12` | dark sections, derived from the leaf green |
+| `--gold` / `--brand-gold` | `#E0B23C` | the artwork's mid gold: accents on dark, primary button fill |
+| `--gold-l` | `#F0C95C` | hover for the above |
+| `--bronze` | `#7A5E12` | the artwork's shadow tone: accents and solid fills on light |
+| `--bronze-d` | `#5E4810` | hover for the above |
+| `--ink` / `--brand-black` | `#101010` / `#0D0D0D` | dark sections, footer, the logo chip |
+| `--sand` / `--sand-2` | `#F5F2E9` / `#E9E3D3` | light grounds |
+| `--brand-char` / `--text` | `#262626` | body copy |
 
-`--fern` is a deliberate departure. The raw ring green `#498526` only reaches
-**3.44:1** against the dark ink and fails WCAG AA for text, so accents on dark
-backgrounds use `#6FB93A` (**6.40:1**) — same hue family, legible. The true ring
-green is kept as `--brand-fresh` for light surfaces.
+The gold is split in two because one value cannot serve both grounds. `#E0B23C`
+is **9.61:1** on `--ink` and **1.77:1** on `--sand` — fine on black, failing WCAG
+AA outright on cream. So anything gold that sits on a light surface (eyebrows,
+service links, bullets, hover borders) uses `--bronze`, which is **6.11:1** on
+white and **5.46:1** on sand, and carries white text at **6.11:1** when it is a
+fill. The two buttons invert each other: the primary CTA is gold with near-black
+type, the form's submit is near-black with gold type.
 
-Every sampled text/background pair on the rendered pages passes WCAG AA. `--text-3`
-was darkened from `#87908A` to `#666F69` for this reason — the old value was 3.29:1.
+Every text/background pair on the rendered pages passes WCAG AA; the ratios are
+checked rather than eyeballed, and axe-core reports zero violations across six
+pages at mobile and desktop. Over the hero the header is transparent, so it
+carries a top-down scrim: the white nav needs the darkening on a light photo,
+and without it an auditor measures that text against the cream page background
+behind the fixed header rather than against the photo.
 
 ### Logo
 

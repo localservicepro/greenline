@@ -333,7 +333,7 @@ def head(page):
 <meta name="description" content="{page['desc']}">
 <link rel="canonical" href="{url}">
 <meta name="robots" content="{robots}">
-<meta name="theme-color" content="#0C2A12">
+<meta name="theme-color" content="#101010">
 <meta name="geo.region" content="AU-VIC">
 <meta name="geo.placename" content="Frankston, Victoria">
 <meta name="geo.position" content="{BIZ['lat']};{BIZ['lng']}">

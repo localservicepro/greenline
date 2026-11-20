@@ -2,7 +2,7 @@ const { chromium } = require('playwright');
 const path = require('path');
 const AXE = path.join(process.cwd(),'node_modules/axe-core/axe.min.js');
 (async () => {
-  const b = await chromium.launch({ executablePath:'/opt/pw-browsers/chromium-1194/chrome-linux/chrome' });
+  const b = await chromium.launch();
   const pages = process.argv[2] ? [process.argv[2]] : ['/','/services/lawn-mowing/','/about/','/contact/','/services/','/thank-you/'];
   let total = 0;
   for (const url of pages) {
