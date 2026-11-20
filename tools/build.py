@@ -103,6 +103,26 @@ GHL_TRACKING = (
     '</script>\n'
 )
 
+# GA4 plus a generate_lead event on the thank-you page. This was first added
+# straight into the generated HTML, where the next build would have wiped it —
+# it lives here now so it survives a rebuild. Kept verbatim, sales-brain
+# comment markers and position included, so the tool that wrote it still finds
+# its own markers instead of inserting a second copy.
+ANALYTICS = (
+    '<!-- sales-brain:analytics -->\n'
+    '<!-- sales-brain:ga -->\n'
+    '<script async src="https://www.googletagmanager.com/gtag/js?id=G-1RZ0Q09788"></script>\n'
+    "<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}"
+    "gtag('js',new Date());gtag('config','G-1RZ0Q09788');</script>\n"
+    '<!-- /sales-brain:ga -->\n'
+    "<script>addEventListener('load',function(){try{if(!/\\/(thank-?you|thanks)(\\/|$)/i"
+    ".test(location.pathname)||typeof gtag!=='function')return;"
+    "var k='sb-lead:'+location.pathname+location.search;if(sessionStorage.getItem(k))return;"
+    "sessionStorage.setItem(k,'1');gtag('event','generate_lead',{page_path:location.pathname});}"
+    "catch(e){}});</script>\n"
+    '<!-- /sales-brain:analytics -->\n'
+)
+
 # The quote form submits natively so GHL can capture it, then lands the visitor
 # on the thank-you page.
 #
@@ -327,7 +347,7 @@ def head(page):
     return f"""<!DOCTYPE html>
 <html lang="en-AU">
 <head>
-<meta charset="utf-8">
+{ANALYTICS}<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{page['title']}</title>
 <meta name="description" content="{page['desc']}">
